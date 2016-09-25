@@ -15,5 +15,6 @@ add_subdirectory(extern/glfw)
 set(SOURCE_FILES main.cpp)
 add_executable(GLPlay ${SOURCE_FILES})
 
-target_compile_definitions(GLPlay PRIVATE GLFW_INCLUDE_NONE=1)
-target_link_libraries(GLPlay glfw glbinding)
+target_compile_definitions(GLPlay PUBLIC GLFW_INCLUDE_NONE=1)
+target_link_libraries(GLPlay PRIVATE glfw glbinding)
+target_include_directories(GLPlay PUBLIC extern/glm)

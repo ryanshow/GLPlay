@@ -1,7 +1,8 @@
 #include <glbinding/gl/gl.h>
 #include <glbinding/Binding.h>
 #include <GLFW/glfw3.h>
-#include <cstdlib>
+#include <glm/gtc/constants.hpp>
+#include <iostream>
 
 using namespace gl;
 
@@ -24,6 +25,8 @@ int main() {
     glfwMakeContextCurrent(window);
     glbinding::Binding::initialize();
     glfwSwapInterval(1);
+
+    std::cout << "pi = " << glm::pi<float>() << std::endl;
 
     while (!glfwWindowShouldClose(window)) {
 
