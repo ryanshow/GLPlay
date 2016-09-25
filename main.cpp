@@ -1,5 +1,9 @@
+#include <glbinding/gl/gl.h>
+#include <glbinding/Binding.h>
 #include <GLFW/glfw3.h>
 #include <cstdlib>
+
+using namespace gl;
 
 int main() {
     GLFWwindow *window;
@@ -18,11 +22,13 @@ int main() {
     }
 
     glfwMakeContextCurrent(window);
+    glbinding::Binding::initialize();
     glfwSwapInterval(1);
 
     while (!glfwWindowShouldClose(window)) {
 
-        // glClear(GL_COLOR_BUFFER_BIT);
+        glClearColor(0.2, 0.2, 0.2, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
