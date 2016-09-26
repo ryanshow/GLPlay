@@ -2,9 +2,9 @@
 #include <glbinding/Binding.h>
 #include <GLFW/glfw3.h>
 #include <glm/gtc/constants.hpp>
-#include <iostream>
 #include <thread>
 #include <fstream>
+#include <iostream>
 
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb_truetype.h"
@@ -16,7 +16,11 @@ static const double MAX_FPS_INTERVAL = (1/25.0f);
 int main() {
     GLFWwindow *window;
 
+    std::cout << "Is the main function being entered?" << std::endl;
+
+
     if(!glfwInit()) {
+        std::cout << "GLFW failed to init" << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -25,6 +29,7 @@ int main() {
 
     window = glfwCreateWindow(640, 480, "GLPlay", nullptr, nullptr);
     if(!window) {
+        std::cout << "GLFW failed to create the window" << std::endl;
         glfwTerminate();
         exit(EXIT_FAILURE);
     }
@@ -35,14 +40,14 @@ int main() {
 
     std::cout << "pi = " << glm::pi<float>() << std::endl;
 
-    /* Begin Triangle Rendering Test */
+    // Begin Triangle Rendering Test
 
     GLfloat vertices[] = {
         // Positions          // Colors           // Texture Coords
-        0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // Top Right
-        0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // Bottom Right
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // Bottom Left
-        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // Top Left
+        0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 0.0f,   // Top Right
+        0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f,   // Bottom Right
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 1.0f,   // Bottom Left
+        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 0.0f    // Top Left
     };
 
     GLuint indices[] = {  // Note that we start from 0!
@@ -62,10 +67,10 @@ int main() {
     "layout (location = 0) in vec3 inPosition;\n"
     "layout (location = 1) in vec3 inColor;\n"
     "layout (location = 2) in vec2 inTexCoord;\n"
-    "out vec2 outTexCoord;\n"
+    "out vec2 texCoord;\n"
     "void main() {\n"
     "  gl_Position = vec4(inPosition, 1.0);\n"
-    "  outTexCoord = inTexCoord;\n"
+    "  texCoord = inTexCoord;\n"
     "}\0";
 
     GLuint vertexShader;
@@ -74,11 +79,11 @@ int main() {
     glCompileShader(vertexShader);
 
     const GLchar* fragmentShaderSource = "#version 330 core\n"
-    "in vec2 inTexCoord;\n"
+    "in vec2 texCoord;\n"
     "out vec4 outColor;\n"
     "uniform sampler2D tex0;\n"
     "void main() {\n"
-    "  outColor = vec4(texture(tex0, inTexCoord).a, 0.5, 1.0, 1.0);\n"
+    "  outColor = vec4(0.0, 0.0, 0.0, texture(tex0, texCoord).r);\n"
     "}\0";
 
     GLuint fragmentShader;
@@ -117,11 +122,11 @@ int main() {
         //glBindVertexArray(0);
     }
 
-    /* End Triangle Font Rendering Test */
+    // End Triangle Font Rendering Test
 
-    /* Begin Font Loading Test */
+    // Begin Font Loading Test
 
-    const char* ttf_filename = "DroidSansMono.ttf";
+    const char* ttf_filename = "assets/DroidSansMono.ttf";
     GLuint ftex;
 
     std::ifstream is (ttf_filename, std::ifstream::binary);
@@ -139,17 +144,11 @@ int main() {
         is.close();
 
         unsigned char temp_bitmap[512 * 512];
-        std::fill(temp_bitmap, temp_bitmap + (512*512-1), 0);
-        std::fill(temp_bitmap, temp_bitmap + 1000, 255);
-
-        std::cout << "0: " << (int)temp_bitmap[0] << std::endl;
-        std::cout << "1003: " << (int)temp_bitmap[1003] << std::endl;
 
         stbtt_bakedchar cdata[96];
 
-        //int ret = stbtt_BakeFontBitmap(reinterpret_cast<unsigned char *>(ttf_buffer), 0, 32.0, temp_bitmap, 512, 512, 32, 96, cdata);
+        stbtt_BakeFontBitmap(reinterpret_cast<unsigned char *>(ttf_buffer), 0, 32.0, temp_bitmap, 512, 512, 32, 96, cdata);
 
-        //std::cout << "BakeFontBitmap return code: " << ret << std::endl;
 
         glGenTextures(1, &ftex);
 
@@ -161,10 +160,10 @@ int main() {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, 512, 512, 0, GL_ALPHA, GL_UNSIGNED_BYTE, temp_bitmap);
-            //glGenerateMipmap(GL_TEXTURE_2D);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 512, 512, 0, GL_RED, GL_UNSIGNED_BYTE, temp_bitmap);
+            glGenerateMipmap(GL_TEXTURE_2D);
 
-            //glBindTexture(GL_TEXTURE_2D, 0);
+            glBindTexture(GL_TEXTURE_2D, 0);
         }
 
         // delete[] temp_bitmap;
@@ -193,7 +192,7 @@ int main() {
 
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-            //glBindVertexArray(0);
+            glBindVertexArray(0);
         }
 
         glfwSwapBuffers(window);
