@@ -12,7 +12,7 @@ set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory(extern/glfw)
 
-set(SOURCE_FILES main.cpp)
+set(SOURCE_FILES src/main.cpp)
 add_executable(GLPlay ${SOURCE_FILES})
 
 target_compile_definitions(GLPlay PUBLIC GLFW_INCLUDE_NONE=1)
