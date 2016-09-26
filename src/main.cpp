@@ -3,8 +3,11 @@
 #include <GLFW/glfw3.h>
 #include <glm/gtc/constants.hpp>
 #include <iostream>
+#include <thread>
 
 using namespace gl;
+
+static const double MAX_FPS_INTERVAL = (1/25.0f);
 
 int main() {
     GLFWwindow *window;
@@ -16,7 +19,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 
-    window = glfwCreateWindow(640, 480, "GLPlay", NULL, NULL);
+    window = glfwCreateWindow(640, 480, "GLPlay", nullptr, nullptr);
     if(!window) {
         glfwTerminate();
         exit(EXIT_FAILURE);
@@ -51,7 +54,7 @@ int main() {
 
     GLuint vertexShader;
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
     glCompileShader(vertexShader);
 
     const GLchar* fragmentShaderSource = "#version 330 core\n"
@@ -62,7 +65,7 @@ int main() {
 
     GLuint fragmentShader;
     fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
     glCompileShader(fragmentShader);
 
     GLuint shaderProgram;
@@ -89,6 +92,8 @@ int main() {
 
     while (!glfwWindowShouldClose(window)) {
 
+        glfwSetTime(0.0f);
+
         glClearColor(0.2, 0.2, 0.2, 1.0);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -101,6 +106,14 @@ int main() {
 
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        if(glfwGetTime() < MAX_FPS_INTERVAL) {
+            std::this_thread::sleep_for(
+                std::chrono::microseconds(
+                    int((MAX_FPS_INTERVAL - glfwGetTime()) * 1000000)
+                )
+            );
+        }
     }
 
     glfwDestroyWindow(window);
