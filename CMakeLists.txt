@@ -17,4 +17,4 @@ add_executable(GLPlay ${SOURCE_FILES})
 
 target_compile_definitions(GLPlay PUBLIC GLFW_INCLUDE_NONE=1)
 target_link_libraries(GLPlay PRIVATE glfw glbinding)
-target_include_directories(GLPlay PUBLIC extern/glm)
+target_include_directories(GLPlay PUBLIC extern/glm extern/stb)
