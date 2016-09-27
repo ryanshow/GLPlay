@@ -1,12 +1,15 @@
 #include <glbinding/gl/gl.h>
 #include <glbinding/Binding.h>
 #include <GLFW/glfw3.h>
+#include <fmt/format.h>
 #include <thread>
 #include <fstream>
 #include <iostream>
 
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb_truetype.h"
+
+#define ERROR(...) do { fmt::print(stderr, "{}:{} ", __FILE__, __LINE__); fmt::print(stderr, __VA_ARGS__); fmt::print(stderr, "\n"); } while (0)
 
 using namespace gl;
 
@@ -16,7 +19,7 @@ int main() {
     GLFWwindow *window;
 
     if(!glfwInit()) {
-        std::cout << "GLFW failed to init" << std::endl;
+        ERROR("GLFW failed to init");
         exit(EXIT_FAILURE);
     }
 
@@ -32,7 +35,7 @@ int main() {
 
     window = glfwCreateWindow(640, 480, "GLPlay", nullptr, nullptr);
     if(!window) {
-        std::cout << "GLFW failed to create the window" << std::endl;
+        ERROR("GLFW failed to create the window");
         glfwTerminate();
         exit(EXIT_FAILURE);
     }
@@ -49,7 +52,7 @@ int main() {
     std::ifstream is (ttf_filename, std::ifstream::binary);
 
     if (!is) {
-        std::cout << "Unable to open " << ttf_filename << std::endl;
+        ERROR("Unable to open {}", ttf_filename);
         exit(EXIT_FAILURE);
     }
 
@@ -60,7 +63,7 @@ int main() {
 
     char *ttf_buffer = new char[length];
 
-    std::cout << "Reading " << length << " bytes from " << ttf_filename << std::endl;
+    fmt::print("Reading {} bytes from {}\n", length, ttf_filename);
 
     is.read(ttf_buffer, length);
     is.close();
