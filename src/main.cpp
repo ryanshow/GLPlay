@@ -76,7 +76,6 @@ int main() {
 
     glGenTextures(1, &ftex);
 
-    //glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, ftex); {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -90,37 +89,37 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    // Begin Triangle Rendering Test
+    float x, y = 0.0f;
 
-    GLfloat vertices[] = {
-        // Positions         // Texture Coords
-        0.5f,  0.5f, 0.0f,   1.0f, 0.0f,   // Top Right
-        0.5f, -0.5f, 0.0f,   1.0f, 1.0f,   // Bottom Right
-        -0.5f, -0.5f, 0.0f,  0.0f, 1.0f,   // Bottom Left
-        -0.5f,  0.5f, 0.0f,  0.0f, 0.0f    // Top Left
-    };
+    stbtt_aligned_quad q;
+    stbtt_GetBakedQuad(cdata, 512, 512, 31, &x, &y, &q, 1);
 
-    GLuint indices[] = {  // Note that we start from 0!
-        0, 1, 3, // First Triangle
-        1, 2, 3  // Second Triangle
-    };
+    fmt::print("X0: {}, Y0: {}, S0: {}, T0: {}\n", q.x0, q.x1, q.s0, q.t0);
+    fmt::print("X1: {}, Y1: {}, S1: {}, T1: {}\n\n", q.x1, q.y1, q.s1, q.t1);
+
+    std::vector<GLfloat> vertices;
+    std::vector<GLuint> indices;
+
+    vertices.push_back(q.x1/30); vertices.push_back(-q.y0/30); vertices.push_back(0.0f); vertices.push_back(q.s1); vertices.push_back(q.t0);
+    vertices.push_back(q.x1/30); vertices.push_back(-q.y1/30); vertices.push_back(0.0f); vertices.push_back(q.s1); vertices.push_back(q.t1);
+    vertices.push_back(q.x0/30); vertices.push_back(-q.y1/30); vertices.push_back(0.0f); vertices.push_back(q.s0); vertices.push_back(q.t1);
+    vertices.push_back(q.x0/30); vertices.push_back(-q.y0/30); vertices.push_back(0.0f); vertices.push_back(q.s0); vertices.push_back(q.t0);
+
+    indices.push_back(0); indices.push_back(1); indices.push_back(3);
+    indices.push_back(1); indices.push_back(2); indices.push_back(3);
 
     GLuint VBO, EBO;
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
     const GLchar* vertexShaderSource = "#version 330 core\n"
-    "layout (location = 0) in vec3 inPosition;\n"
-    "layout (location = 1) in vec2 inTexCoord;\n"
-    "out vec2 texCoord;\n"
-    "void main() {\n"
-    "  gl_Position = vec4(inPosition, 1.0);\n"
-    "  texCoord = inTexCoord;\n"
-    "}\0";
+            "layout (location = 0) in vec3 inPosition;\n"
+            "layout (location = 1) in vec2 inTexCoord;\n"
+            "out vec2 texCoord;\n"
+            "void main() {\n"
+            "  gl_Position = vec4(inPosition, 1.0);\n"
+            "  texCoord = inTexCoord;\n"
+            "}\0";
 
     GLuint vertexShader;
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -128,12 +127,12 @@ int main() {
     glCompileShader(vertexShader);
 
     const GLchar* fragmentShaderSource = "#version 330 core\n"
-    "in vec2 texCoord;\n"
-    "out vec4 outColor;\n"
-    "uniform sampler2D tex0;\n"
-    "void main() {\n"
-    "  outColor = vec4(1.0, 1.0, 0.0, texture(tex0, texCoord).r);\n"
-    "}\0";
+            "in vec2 texCoord;\n"
+            "out vec4 outColor;\n"
+            "uniform sampler2D tex0;\n"
+            "void main() {\n"
+            "  outColor = vec4(1.0, 1.0, 0.0, texture(tex0, texCoord).r);\n"
+            "}\0";
 
     GLuint fragmentShader;
     fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -154,10 +153,10 @@ int main() {
 
     glBindVertexArray(VAO); {
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*vertices.size(), vertices.data(), GL_STATIC_DRAW);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*vertices.size(), indices.data(), GL_STATIC_DRAW);
 
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
         glEnableVertexAttribArray(0);
@@ -199,9 +198,9 @@ int main() {
 
         if(glfwGetTime() < MAX_FPS_INTERVAL) {
             std::this_thread::sleep_for(
-                std::chrono::microseconds(
-                    int((MAX_FPS_INTERVAL - glfwGetTime()) * 1000000)
-                )
+                    std::chrono::microseconds(
+                            int((MAX_FPS_INTERVAL - glfwGetTime()) * 1000000)
+                    )
             );
         }
     }
