@@ -95,30 +95,42 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    float x, y = 0.0f;
-
-    stbtt_aligned_quad q;
-    stbtt_GetBakedQuad(cdata, 512, 512, 31, &x, &y, &q, 1);
-
-    fmt::print("X0: {}, Y0: {}, S0: {}, T0: {}\n", q.x0, q.x1, q.s0, q.t0);
-    fmt::print("X1: {}, Y1: {}, S1: {}, T1: {}\n\n", q.x1, q.y1, q.s1, q.t1);
-
+    float x = -130.0f;
+    float y = 0.0f;
     std::vector<GLfloat> vertices;
     std::vector<GLuint> indices;
+    stbtt_aligned_quad q;
+    std::string text("Hello World");
+    int i=0;
 
-    vertices.push_back(q.x1/30); vertices.push_back(-q.y0/30); vertices.push_back(0.0f); vertices.push_back(q.s1); vertices.push_back(q.t0);
-    vertices.push_back(q.x1/30); vertices.push_back(-q.y1/30); vertices.push_back(0.0f); vertices.push_back(q.s1); vertices.push_back(q.t1);
-    vertices.push_back(q.x0/30); vertices.push_back(-q.y1/30); vertices.push_back(0.0f); vertices.push_back(q.s0); vertices.push_back(q.t1);
-    vertices.push_back(q.x0/30); vertices.push_back(-q.y0/30); vertices.push_back(0.0f); vertices.push_back(q.s0); vertices.push_back(q.t0);
+    for(auto c : text) {
+        float x0 = x;
+        float y0 = y;
 
-    indices.push_back(0); indices.push_back(1); indices.push_back(3);
-    indices.push_back(1); indices.push_back(2); indices.push_back(3);
+        fmt::print("X: {}, Y: {}\n\n", x, y);
+
+        stbtt_GetBakedQuad(cdata, 512, 512, c-32, &x, &y, &q, 1);
+
+        fmt::print("X0: {}, Y0: {}, S0: {}, T0: {}\n", q.x0, q.x1, q.s0, q.t0);
+        fmt::print("X1: {}, Y1: {}, S1: {}, T1: {}\n\n", q.x1, q.y1, q.s1, q.t1);
+
+        vertices.push_back(x0+q.x1); vertices.push_back(-q.y0); vertices.push_back(0.0f); vertices.push_back(q.s1); vertices.push_back(q.t0);
+        vertices.push_back(x0+q.x1); vertices.push_back(-q.y1); vertices.push_back(0.0f); vertices.push_back(q.s1); vertices.push_back(q.t1);
+        vertices.push_back(x0+q.x0); vertices.push_back(-q.y1); vertices.push_back(0.0f); vertices.push_back(q.s0); vertices.push_back(q.t1);
+        vertices.push_back(x0+q.x0); vertices.push_back(-q.y0); vertices.push_back(0.0f); vertices.push_back(q.s0); vertices.push_back(q.t0);
+
+        indices.push_back(i+0); indices.push_back(i+1); indices.push_back(i+3);
+        indices.push_back(i+1); indices.push_back(i+2); indices.push_back(i+3);
+
+        i+= 4;
+    }
 
     glm::mat4 viewMatrix = glm::mat4(1.0f);
-    viewMatrix *= glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    viewMatrix *= glm::lookAt(glm::vec3(0.0f, 0.0f, 500.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
     glm::mat4 projMatrix = glm::mat4(1.0f);
-    projMatrix *= glm::perspective(45.0f, 640.0f/480.0f, 0.1f, 100.0f);
+    //projMatrix *= glm::perspective(45.0f, 640.0f/480.0f, 0.1f, 1000.0f);
+    projMatrix = glm::ortho(-320.0f, 320.0f, -240.0f, 240.0f, 0.1f, 1000.0f);
 
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     modelMatrix = glm::rotate(modelMatrix, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
@@ -210,7 +222,7 @@ int main() {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, ftex);
 
-            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+            glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 
             glBindVertexArray(0);
         }
