@@ -6,6 +6,10 @@
 #include <fstream>
 #include <iostream>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb_truetype.h"
 
@@ -43,6 +47,8 @@ int main() {
     glfwMakeContextCurrent(window);
     glbinding::Binding::initialize();
     glfwSwapInterval(1);
+
+    glViewport(0, 0, 640, 480);
 
     // === Load the font ===
 
@@ -108,16 +114,26 @@ int main() {
     indices.push_back(0); indices.push_back(1); indices.push_back(3);
     indices.push_back(1); indices.push_back(2); indices.push_back(3);
 
-    GLuint VBO, EBO;
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
+    glm::mat4 viewMatrix = glm::mat4(1.0f);
+    viewMatrix *= glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+    glm::mat4 projMatrix = glm::mat4(1.0f);
+    projMatrix *= glm::perspective(45.0f, 640.0f/480.0f, 0.1f, 100.0f);
+
+    glm::mat4 modelMatrix = glm::mat4(1.0f);
+    modelMatrix = glm::rotate(modelMatrix, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 0.0f));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0f, 1.0f, 1.0f));
 
     const GLchar* vertexShaderSource = "#version 330 core\n"
             "layout (location = 0) in vec3 inPosition;\n"
             "layout (location = 1) in vec2 inTexCoord;\n"
+            "uniform mat4 viewMatrix;\n"
+            "uniform mat4 projMatrix;\n"
+            "uniform mat4 modelMatrix;\n"
             "out vec2 texCoord;\n"
             "void main() {\n"
-            "  gl_Position = vec4(inPosition, 1.0);\n"
+            "  gl_Position = projMatrix * viewMatrix * modelMatrix * vec4(inPosition, 1.0);\n"
             "  texCoord = inTexCoord;\n"
             "}\0";
 
@@ -148,8 +164,10 @@ int main() {
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    GLuint VAO;
+    GLuint VAO, VBO, EBO;
     glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
 
     glBindVertexArray(VAO); {
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -184,6 +202,10 @@ int main() {
             glUseProgram(shaderProgram);
 
             glUniform1i(glGetUniformLocation(shaderProgram, "tex0"), 0);
+            glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
+            glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
+            glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
+
 
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, ftex);
