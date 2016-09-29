@@ -144,13 +144,13 @@ int main() {
     modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0f, 1.0f, 1.0f));
 
     // glShaderSource expects double pointer for it's source reference
-    const char * shader_ptr = VERT_SIMPLE;
+    const char * shader_ptr = reinterpret_cast<const char *>(VERT_SIMPLE);
     GLuint vertexShader;
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &shader_ptr, nullptr);
     glCompileShader(vertexShader);
 
-    shader_ptr = FRAG_SIMPLE;
+    shader_ptr = reinterpret_cast<const char *>(FRAG_SIMPLE);
     GLuint fragmentShader;
     fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &shader_ptr, nullptr);
