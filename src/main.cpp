@@ -15,6 +15,8 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb_truetype.h"
 
+#include "shaders.h"
+
 using namespace gl;
 
 static const double MAX_FPS_INTERVAL = (1/25.0f);
@@ -38,7 +40,7 @@ unsigned char* loadFont(const char *ttf_filename) {
     int length = static_cast<int>(is.tellg());
     is.seekg(0, is.beg);
 
-    printf("Reading {} bytes from {}\n", length, ttf_filename);
+    fmt::print("Reading {} bytes from {}\n", length, ttf_filename);
 
     char *ttf_buffer = new char[length];
 
@@ -51,8 +53,6 @@ unsigned char* loadFont(const char *ttf_filename) {
 int main() {
     EXIT_CHECK(glfwInit(), "GLFW failed to init");
 
-    GLFWwindow *window;
-
 #ifdef __APPLE__
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
@@ -63,7 +63,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 #endif
 
-    window = glfwCreateWindow(640, 480, "GLPlay", nullptr, nullptr);
+    GLFWwindow *window = glfwCreateWindow(640, 480, "GLPlay", nullptr, nullptr);
     if(!window) {
         glfwTerminate();
         EXIT_CHECK(window, "GLFW failed to create the window");
@@ -143,34 +143,17 @@ int main() {
     modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 0.0f));
     modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0f, 1.0f, 1.0f));
 
-    const GLchar* vertexShaderSource = "#version 330 core\n"
-            "layout (location = 0) in vec3 inPosition;\n"
-            "layout (location = 1) in vec2 inTexCoord;\n"
-            "uniform mat4 viewMatrix;\n"
-            "uniform mat4 projMatrix;\n"
-            "uniform mat4 modelMatrix;\n"
-            "out vec2 texCoord;\n"
-            "void main() {\n"
-            "  gl_Position = projMatrix * viewMatrix * modelMatrix * vec4(inPosition, 1.0);\n"
-            "  texCoord = inTexCoord;\n"
-            "}\0";
-
+    // glShaderSource expects double pointer for it's source reference
+    const char * shader_ptr = VERT_SIMPLE;
     GLuint vertexShader;
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
+    glShaderSource(vertexShader, 1, &shader_ptr, nullptr);
     glCompileShader(vertexShader);
 
-    const GLchar* fragmentShaderSource = "#version 330 core\n"
-            "in vec2 texCoord;\n"
-            "out vec4 outColor;\n"
-            "uniform sampler2D tex0;\n"
-            "void main() {\n"
-            "  outColor = vec4(1.0, 1.0, 0.0, texture(tex0, texCoord).r);\n"
-            "}\0";
-
+    shader_ptr = FRAG_SIMPLE;
     GLuint fragmentShader;
     fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
+    glShaderSource(fragmentShader, 1, &shader_ptr, nullptr);
     glCompileShader(fragmentShader);
 
     GLuint shaderProgram;
