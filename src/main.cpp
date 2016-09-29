@@ -3,9 +3,6 @@
 #include <GLFW/glfw3.h>
 #include <fmt/format.h>
 #include <thread>
-#include <fstream>
-#include <iostream>
-#include <cstdlib>
 #include <cstdarg>
 
 #include <glm/glm.hpp>
@@ -15,7 +12,8 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb_truetype.h"
 
-#include "shaders.h"
+#include "resources/shaders.h"
+#include "resources/fonts.h"
 
 using namespace gl;
 
@@ -29,26 +27,6 @@ void EXIT_CHECK(T ret_code, const char* format, const U & ... args) {
         std::exit(EXIT_FAILURE);
     }
 };
-
-unsigned char* loadFont(const char *ttf_filename) {
-    std::ifstream is (ttf_filename, std::ifstream::binary);
-
-    EXIT_CHECK(static_cast<bool>(is), "Unable to open {}", ttf_filename);
-
-    // determine the length of the file
-    is.seekg(0, is.end);
-    int length = static_cast<int>(is.tellg());
-    is.seekg(0, is.beg);
-
-    fmt::print("Reading {} bytes from {}\n", length, ttf_filename);
-
-    char *ttf_buffer = new char[length];
-
-    is.read(ttf_buffer, length);
-    is.close();
-
-    return reinterpret_cast<unsigned char*>(ttf_buffer);
-}
 
 int main() {
     EXIT_CHECK(glfwInit(), "GLFW failed to init");
@@ -79,12 +57,10 @@ int main() {
 
     GLuint ftex;
 
-    unsigned char *ttf_buffer = loadFont("assets/DroidSansMono.ttf");
-
     unsigned char temp_bitmap[512 * 512];
     stbtt_bakedchar cdata[96];
 
-    stbtt_BakeFontBitmap(ttf_buffer, 0, 48.0, temp_bitmap, 512, 512, 32, 95, cdata);
+    stbtt_BakeFontBitmap(DROID_SANS_MONO, 0, 48.0, temp_bitmap, 512, 512, 32, 95, cdata);
 
     glGenTextures(1, &ftex);
 
