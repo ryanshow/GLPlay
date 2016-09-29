@@ -5,6 +5,8 @@
 #include <thread>
 #include <fstream>
 #include <iostream>
+#include <cstdlib>
+#include <cstdarg>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -13,19 +15,43 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb_truetype.h"
 
-#define ERROR(...) do { fmt::print(stderr, "{}:{} ", __FILE__, __LINE__); fmt::print(stderr, __VA_ARGS__); fmt::print(stderr, "\n"); } while (0)
-
 using namespace gl;
 
 static const double MAX_FPS_INTERVAL = (1/25.0f);
 
-int main() {
-    GLFWwindow *window;
-
-    if(!glfwInit()) {
-        ERROR("GLFW failed to init");
-        exit(EXIT_FAILURE);
+template <typename T, typename... U>
+void EXIT_CHECK(T ret_code, const char* format, const U & ... args) {
+    if (!ret_code) {
+        fmt::print(stderr, format, args...);
+        fmt::print(stderr, "\n");
+        std::exit(EXIT_FAILURE);
     }
+};
+
+unsigned char* loadFont(const char *ttf_filename) {
+    std::ifstream is (ttf_filename, std::ifstream::binary);
+
+    EXIT_CHECK(static_cast<bool>(is), "Unable to open {}", ttf_filename);
+
+    // determine the length of the file
+    is.seekg(0, is.end);
+    int length = static_cast<int>(is.tellg());
+    is.seekg(0, is.beg);
+
+    printf("Reading {} bytes from {}\n", length, ttf_filename);
+
+    char *ttf_buffer = new char[length];
+
+    is.read(ttf_buffer, length);
+    is.close();
+
+    return reinterpret_cast<unsigned char*>(ttf_buffer);
+}
+
+int main() {
+    EXIT_CHECK(glfwInit(), "GLFW failed to init");
+
+    GLFWwindow *window;
 
 #ifdef __APPLE__
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -39,9 +65,8 @@ int main() {
 
     window = glfwCreateWindow(640, 480, "GLPlay", nullptr, nullptr);
     if(!window) {
-        ERROR("GLFW failed to create the window");
         glfwTerminate();
-        exit(EXIT_FAILURE);
+        EXIT_CHECK(window, "GLFW failed to create the window");
     }
 
     glfwMakeContextCurrent(window);
@@ -52,33 +77,14 @@ int main() {
 
     // === Load the font ===
 
-    const char* ttf_filename = "assets/DroidSansMono.ttf";
     GLuint ftex;
 
-    std::ifstream is (ttf_filename, std::ifstream::binary);
-
-    if (!is) {
-        ERROR("Unable to open {}", ttf_filename);
-        exit(EXIT_FAILURE);
-    }
-
-    // determine the length of the file
-    is.seekg(0, is.end);
-    int length = static_cast<int>(is.tellg());
-    is.seekg(0, is.beg);
-
-    char *ttf_buffer = new char[length];
-
-    fmt::print("Reading {} bytes from {}\n", length, ttf_filename);
-
-    is.read(ttf_buffer, length);
-    is.close();
+    unsigned char *ttf_buffer = loadFont("assets/DroidSansMono.ttf");
 
     unsigned char temp_bitmap[512 * 512];
-
     stbtt_bakedchar cdata[96];
 
-    stbtt_BakeFontBitmap(reinterpret_cast<unsigned char *>(ttf_buffer), 0, 48.0, temp_bitmap, 512, 512, 32, 95, cdata);
+    stbtt_BakeFontBitmap(ttf_buffer, 0, 48.0, temp_bitmap, 512, 512, 32, 95, cdata);
 
     glGenTextures(1, &ftex);
 
@@ -100,8 +106,8 @@ int main() {
     std::vector<GLfloat> vertices;
     std::vector<GLuint> indices;
     stbtt_aligned_quad q;
-    std::string text("Hello World");
-    int i=0;
+    std::string text("GLPlay");
+    unsigned int i=0;
 
     for(auto c : text) {
         float x0 = x;
@@ -222,7 +228,7 @@ int main() {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, ftex);
 
-            glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+            glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
 
             glBindVertexArray(0);
         }
