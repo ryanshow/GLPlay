@@ -19,16 +19,21 @@ using namespace gl;
 
 static const double MAX_FPS_INTERVAL = (1/25.0f);
 
+template <typename... T>
+void EXIT(const char* format, const T & ... args) {
+    fmt::print(stderr, format, args...);
+    fmt::print(stderr, "\n");
+    std::exit(EXIT_FAILURE);
+}
+
 template <typename T, typename... U>
-void EXIT_CHECK(T ret_code, const char* format, const U & ... args) {
+void EXIT_CHECK(T ret_code, const char * format, const U & ... args) {
     if (!ret_code) {
-        fmt::print(stderr, format, args...);
-        fmt::print(stderr, "\n");
-        std::exit(EXIT_FAILURE);
+        EXIT(format, args...);
     }
 };
 
-int main() {
+void initGL(GLFWwindow *& window, int width, int height, const char *title) {
     EXIT_CHECK(glfwInit(), "GLFW failed to init");
 
 #ifdef __APPLE__
@@ -41,19 +46,25 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 #endif
 
-    GLFWwindow *window = glfwCreateWindow(640, 480, "GLPlay", nullptr, nullptr);
+    window = glfwCreateWindow(width, height, title, nullptr, nullptr);
     if(!window) {
         glfwTerminate();
-        EXIT_CHECK(window, "GLFW failed to create the window");
+        EXIT("GLFW failed to create the window");
     }
 
     glfwMakeContextCurrent(window);
     glbinding::Binding::initialize();
     glfwSwapInterval(1);
 
-    glViewport(0, 0, 640, 480);
+    glViewport(0, 0, width, height);
 
-    // === Load the font ===
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+int main() {
+    GLFWwindow * window;
+    initGL(window, 640, 480, "GLPlay");
 
     GLuint ftex;
 
@@ -89,12 +100,7 @@ int main() {
         float x0 = x;
         float y0 = y;
 
-        fmt::print("X: {}, Y: {}\n\n", x, y);
-
         stbtt_GetBakedQuad(cdata, 512, 512, c-32, &x, &y, &q, 1);
-
-        fmt::print("X0: {}, Y0: {}, S0: {}, T0: {}\n", q.x0, q.x1, q.s0, q.t0);
-        fmt::print("X1: {}, Y1: {}, S1: {}, T1: {}\n\n", q.x1, q.y1, q.s1, q.t1);
 
         vertices.push_back(x0+q.x1); vertices.push_back(-q.y0); vertices.push_back(0.0f); vertices.push_back(q.s1); vertices.push_back(q.t0);
         vertices.push_back(x0+q.x1); vertices.push_back(-q.y1); vertices.push_back(0.0f); vertices.push_back(q.s1); vertices.push_back(q.t1);
@@ -119,7 +125,6 @@ int main() {
     modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 0.0f));
     modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0f, 1.0f, 1.0f));
 
-    // glShaderSource expects double pointer for it's source reference
     const char * shader_ptr = reinterpret_cast<const char *>(VERT_SIMPLE);
     GLuint vertexShader;
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -161,12 +166,6 @@ int main() {
 
         glBindVertexArray(0);
     }
-
-    // End Triangle Font Rendering Test
-
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     while (!glfwWindowShouldClose(window)) {
 
