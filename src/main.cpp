@@ -21,6 +21,8 @@ using namespace gl;
 
 static const double MAX_FPS_INTERVAL = (1/25.0f);
 
+static glm::mat4 projMatrix; // TODO: This will be a member variable
+
 template <typename... T>
 void EXIT(const char* format, const T & ... args) {
     fmt::print(stderr, format, args...);
@@ -34,6 +36,14 @@ void EXIT_CHECK(T ret_code, const char * format, const U & ... args) {
         EXIT(format, args...);
     }
 };
+
+// TODO: This will be a member function
+void windowSizeCallback(GLFWwindow *window, int width, int height) {
+    glViewport(0, 0, width, height);
+
+    //projMatrix *= glm::perspective(45.0f, 640.0f/480.0f, 0.1f, 1000.0f);
+    projMatrix = glm::ortho(0.0f, static_cast<float>(width), 0.0f, static_cast<float>(height), 0.1f, 1000.0f);
+}
 
 void initGL(GLFWwindow *& window, int width, int height, const char *title) {
     EXIT_CHECK(glfwInit(), "GLFW failed to init");
@@ -58,7 +68,8 @@ void initGL(GLFWwindow *& window, int width, int height, const char *title) {
     glbinding::Binding::initialize();
     glfwSwapInterval(1);
 
-    glViewport(0, 0, width, height);
+    glfwSetWindowSizeCallback(window, windowSizeCallback);
+    windowSizeCallback(window, width, height);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -66,40 +77,35 @@ void initGL(GLFWwindow *& window, int width, int height, const char *title) {
 
 int main() {
     GLFWwindow * window;
-    initGL(window, 640, 480, "GLPlay");
+    int win_width = 640, win_height = 480;
+    initGL(window, win_width, win_height, "GLPlay");
 
-    // === FONT SETUP ===
+    // === BAKE THE FONT ===
 
     stbtt_pack_context pack_cxt;
     stbtt_packedchar packed_char[95];
-    unsigned char font_bitmap[512 * 512];
+    unsigned char font_bitmap[256 * 256];
 
-    stbtt_PackBegin(&pack_cxt, font_bitmap, 512, 512, 0, 1, nullptr);
-
+    stbtt_PackBegin(&pack_cxt, font_bitmap, 256, 256, 0, 1, nullptr);
     stbtt_PackSetOversampling(&pack_cxt, 1, 1);
-    stbtt_PackFontRange(&pack_cxt, const_cast<unsigned char*>(DROID_SANS_MONO), 0, 24.0f, 32, 95, packed_char);
-    //stbtt_PackSetOversampling(&pack_cxt, 2, 2);
-    //stbtt_PackFontRange(&pack_cxt, const_cast<unsigned char*>(OPEN_SANS), 0, 24.0f, 32, 95, packed_char);
-    //stbtt_PackSetOversampling(&pack_cxt, 3, 1);
-    //stbtt_PackFontRange(&pack_cxt, const_cast<unsigned char*>(OPEN_SANS), 0, 24.0f, 32, 95, packed_char);
-
+    stbtt_PackFontRange(&pack_cxt, const_cast<unsigned char*>(DROID_SANS_MONO), 0, 48.0f, 32, 95, packed_char);
     stbtt_PackEnd(&pack_cxt);
+
+    // === SETUP THE FONT TEXTURE ===
 
     GLuint ftex;
     glGenTextures(1, &ftex);
 
     glBindTexture(GL_TEXTURE_2D, ftex); {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 512, 512, 0, GL_RED, GL_UNSIGNED_BYTE, font_bitmap);
-        glGenerateMipmap(GL_TEXTURE_2D);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 256, 256, 0, GL_RED, GL_UNSIGNED_BYTE, font_bitmap);
 
         glBindTexture(GL_TEXTURE_2D, 0);
     }
+
+    // == CREATE THE TEXT RENDER MESH ===
 
     float x = 10.0f;
     float y = 0.0f;
@@ -110,7 +116,7 @@ int main() {
     unsigned int i=0;
 
     for(auto c : text) {
-        stbtt_GetPackedQuad(packed_char, 512, 512, c-32, &x, &y, &q, 1);
+        stbtt_GetPackedQuad(packed_char, 256, 256, c-32, &x, &y, &q, 1);
 
         vertices.push_back(q.x1); vertices.push_back(-q.y0); vertices.push_back(0.0f); vertices.push_back(q.s1); vertices.push_back(q.t0);
         vertices.push_back(q.x1); vertices.push_back(-q.y1); vertices.push_back(0.0f); vertices.push_back(q.s1); vertices.push_back(q.t1);
@@ -122,6 +128,17 @@ int main() {
 
         i+= 4;
     }
+
+    // Shows the entire bitmap
+    /*
+    vertices.push_back(200.0f); vertices.push_back(200.0f); vertices.push_back(0.0f); vertices.push_back(1.0f); vertices.push_back(0.0f);
+    vertices.push_back(200.0f); vertices.push_back(0.0f); vertices.push_back(0.0f); vertices.push_back(1.0f); vertices.push_back(1.0f);
+    vertices.push_back(0.0f); vertices.push_back(0.0f); vertices.push_back(0.0f); vertices.push_back(0.0f); vertices.push_back(1.0f);
+    vertices.push_back(0.0f); vertices.push_back(200.0f); vertices.push_back(0.0f); vertices.push_back(0.0f); vertices.push_back(0.0f);
+
+    indices.push_back(0); indices.push_back(1); indices.push_back(3);
+    indices.push_back(1); indices.push_back(2); indices.push_back(3);
+    */
 
     // === ARRAY / BUFFER OBJECT SETUP ===
 
@@ -151,13 +168,9 @@ int main() {
     glm::mat4 viewMatrix = glm::mat4(1.0f);
     viewMatrix *= glm::lookAt(glm::vec3(0.0f, 0.0f, 500.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-    glm::mat4 projMatrix = glm::mat4(1.0f);
-    //projMatrix *= glm::perspective(45.0f, 640.0f/480.0f, 0.1f, 1000.0f);
-    projMatrix = glm::ortho(0.0f, 640.0f, 0.0f, 480.0f, 0.1f, 1000.0f);
-
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     modelMatrix = glm::rotate(modelMatrix, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 450.0f, 0.0f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 200.0f, 0.0f));
     modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0f, 1.0f, 1.0f));
 
     // ===  SHADER CREATION ===
