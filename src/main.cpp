@@ -9,6 +9,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#define STB_RECT_PACK_IMPLEMENTATION
+#include "stb_rect_pack.h"
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb_truetype.h"
 
@@ -66,13 +68,24 @@ int main() {
     GLFWwindow * window;
     initGL(window, 640, 480, "GLPlay");
 
+    // === FONT SETUP ===
+
+    stbtt_pack_context pack_cxt;
+    stbtt_packedchar packed_char[95];
+    unsigned char font_bitmap[512 * 512];
+
+    stbtt_PackBegin(&pack_cxt, font_bitmap, 512, 512, 0, 1, nullptr);
+
+    stbtt_PackSetOversampling(&pack_cxt, 1, 1);
+    stbtt_PackFontRange(&pack_cxt, const_cast<unsigned char*>(DROID_SANS_MONO), 0, 24.0f, 32, 95, packed_char);
+    //stbtt_PackSetOversampling(&pack_cxt, 2, 2);
+    //stbtt_PackFontRange(&pack_cxt, const_cast<unsigned char*>(OPEN_SANS), 0, 24.0f, 32, 95, packed_char);
+    //stbtt_PackSetOversampling(&pack_cxt, 3, 1);
+    //stbtt_PackFontRange(&pack_cxt, const_cast<unsigned char*>(OPEN_SANS), 0, 24.0f, 32, 95, packed_char);
+
+    stbtt_PackEnd(&pack_cxt);
+
     GLuint ftex;
-
-    unsigned char temp_bitmap[512 * 512];
-    stbtt_bakedchar cdata[96];
-
-    stbtt_BakeFontBitmap(DROID_SANS_MONO, 0, 48.0, temp_bitmap, 512, 512, 32, 95, cdata);
-
     glGenTextures(1, &ftex);
 
     glBindTexture(GL_TEXTURE_2D, ftex); {
@@ -82,13 +95,13 @@ int main() {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 512, 512, 0, GL_RED, GL_UNSIGNED_BYTE, temp_bitmap);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 512, 512, 0, GL_RED, GL_UNSIGNED_BYTE, font_bitmap);
         glGenerateMipmap(GL_TEXTURE_2D);
 
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    float x = -130.0f;
+    float x = 10.0f;
     float y = 0.0f;
     std::vector<GLfloat> vertices;
     std::vector<GLuint> indices;
@@ -97,15 +110,12 @@ int main() {
     unsigned int i=0;
 
     for(auto c : text) {
-        float x0 = x;
-        float y0 = y;
+        stbtt_GetPackedQuad(packed_char, 512, 512, c-32, &x, &y, &q, 1);
 
-        stbtt_GetBakedQuad(cdata, 512, 512, c-32, &x, &y, &q, 1);
-
-        vertices.push_back(x0+q.x1); vertices.push_back(-q.y0); vertices.push_back(0.0f); vertices.push_back(q.s1); vertices.push_back(q.t0);
-        vertices.push_back(x0+q.x1); vertices.push_back(-q.y1); vertices.push_back(0.0f); vertices.push_back(q.s1); vertices.push_back(q.t1);
-        vertices.push_back(x0+q.x0); vertices.push_back(-q.y1); vertices.push_back(0.0f); vertices.push_back(q.s0); vertices.push_back(q.t1);
-        vertices.push_back(x0+q.x0); vertices.push_back(-q.y0); vertices.push_back(0.0f); vertices.push_back(q.s0); vertices.push_back(q.t0);
+        vertices.push_back(q.x1); vertices.push_back(-q.y0); vertices.push_back(0.0f); vertices.push_back(q.s1); vertices.push_back(q.t0);
+        vertices.push_back(q.x1); vertices.push_back(-q.y1); vertices.push_back(0.0f); vertices.push_back(q.s1); vertices.push_back(q.t1);
+        vertices.push_back(q.x0); vertices.push_back(-q.y1); vertices.push_back(0.0f); vertices.push_back(q.s0); vertices.push_back(q.t1);
+        vertices.push_back(q.x0); vertices.push_back(-q.y0); vertices.push_back(0.0f); vertices.push_back(q.s0); vertices.push_back(q.t0);
 
         indices.push_back(i+0); indices.push_back(i+1); indices.push_back(i+3);
         indices.push_back(i+1); indices.push_back(i+2); indices.push_back(i+3);
@@ -113,38 +123,7 @@ int main() {
         i+= 4;
     }
 
-    glm::mat4 viewMatrix = glm::mat4(1.0f);
-    viewMatrix *= glm::lookAt(glm::vec3(0.0f, 0.0f, 500.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-    glm::mat4 projMatrix = glm::mat4(1.0f);
-    //projMatrix *= glm::perspective(45.0f, 640.0f/480.0f, 0.1f, 1000.0f);
-    projMatrix = glm::ortho(-320.0f, 320.0f, -240.0f, 240.0f, 0.1f, 1000.0f);
-
-    glm::mat4 modelMatrix = glm::mat4(1.0f);
-    modelMatrix = glm::rotate(modelMatrix, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 0.0f));
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0f, 1.0f, 1.0f));
-
-    const char * shader_ptr = reinterpret_cast<const char *>(VERT_SIMPLE);
-    GLuint vertexShader;
-    vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &shader_ptr, nullptr);
-    glCompileShader(vertexShader);
-
-    shader_ptr = reinterpret_cast<const char *>(FRAG_SIMPLE);
-    GLuint fragmentShader;
-    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &shader_ptr, nullptr);
-    glCompileShader(fragmentShader);
-
-    GLuint shaderProgram;
-    shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    // === ARRAY / BUFFER OBJECT SETUP ===
 
     GLuint VAO, VBO, EBO;
     glGenVertexArrays(1, &VAO);
@@ -166,6 +145,46 @@ int main() {
 
         glBindVertexArray(0);
     }
+
+    // === MODEL / VIEW / PROJECTION MATRIX SETUP ===
+
+    glm::mat4 viewMatrix = glm::mat4(1.0f);
+    viewMatrix *= glm::lookAt(glm::vec3(0.0f, 0.0f, 500.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+    glm::mat4 projMatrix = glm::mat4(1.0f);
+    //projMatrix *= glm::perspective(45.0f, 640.0f/480.0f, 0.1f, 1000.0f);
+    projMatrix = glm::ortho(0.0f, 640.0f, 0.0f, 480.0f, 0.1f, 1000.0f);
+
+    glm::mat4 modelMatrix = glm::mat4(1.0f);
+    modelMatrix = glm::rotate(modelMatrix, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 450.0f, 0.0f));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0f, 1.0f, 1.0f));
+
+    // ===  SHADER CREATION ===
+
+    const char * shader_ptr;
+    GLuint vertexShader, fragmentShader;
+
+    shader_ptr = reinterpret_cast<const char *>(VERT_SIMPLE);
+    vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &shader_ptr, nullptr);
+    glCompileShader(vertexShader);
+
+    shader_ptr = reinterpret_cast<const char *>(FRAG_SIMPLE);
+    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &shader_ptr, nullptr);
+    glCompileShader(fragmentShader);
+
+    GLuint shaderProgram;
+    shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    // === GAME LOOP ===
 
     while (!glfwWindowShouldClose(window)) {
 
@@ -202,6 +221,8 @@ int main() {
             );
         }
     }
+
+    // === CLEAN UP ===
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
