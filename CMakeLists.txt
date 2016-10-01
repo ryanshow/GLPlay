@@ -16,7 +16,7 @@ add_subdirectory(extern/glfw)
 
 add_subdirectory(extern/fmt)
 
-set(SOURCE_FILES src/main.cpp)
+set(SOURCE_FILES src/main.cc src/viewport.h src/viewport.cc src/window.h src/window.cc src/utils.h)
 add_executable(GLPlay ${SOURCE_FILES})
 
 target_compile_definitions(GLPlay PUBLIC GLFW_INCLUDE_NONE=1)

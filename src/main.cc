@@ -1,84 +1,39 @@
+#define STB_RECT_PACK_IMPLEMENTATION
+#define STB_TRUETYPE_IMPLEMENTATION
+
+#include <cstdarg>
+
+#include <thread>
+
+#include <fmt/format.h>
 #include <glbinding/gl/gl.h>
 #include <glbinding/Binding.h>
 #include <GLFW/glfw3.h>
-#include <fmt/format.h>
-#include <thread>
-#include <cstdarg>
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
-#define STB_RECT_PACK_IMPLEMENTATION
-#include "stb_rect_pack.h"
-#define STB_TRUETYPE_IMPLEMENTATION
-#include "stb_truetype.h"
+#include <stb_rect_pack.h>
+#include <stb_truetype.h>
 
 #include "resources/shaders.h"
 #include "resources/fonts.h"
+#include "utils.h"
+#include "window.h"
 
 using namespace gl;
 
-static const double MAX_FPS_INTERVAL = (1/25.0f);
-
-static glm::mat4 projMatrix; // TODO: This will be a member variable
-
-template <typename... T>
-void EXIT(const char* format, const T & ... args) {
-    fmt::print(stderr, format, args...);
-    fmt::print(stderr, "\n");
-    std::exit(EXIT_FAILURE);
-}
-
-template <typename T, typename... U>
-void EXIT_CHECK(T ret_code, const char * format, const U & ... args) {
-    if (!ret_code) {
-        EXIT(format, args...);
-    }
-};
-
-// TODO: This will be a member function
-void windowSizeCallback(GLFWwindow *window, int width, int height) {
-    glViewport(0, 0, width, height);
-
-    //projMatrix *= glm::perspective(45.0f, 640.0f/480.0f, 0.1f, 1000.0f);
-    projMatrix = glm::ortho(0.0f, static_cast<float>(width), 0.0f, static_cast<float>(height), 0.1f, 1000.0f);
-}
-
-void initGL(GLFWwindow *& window, int width, int height, const char *title) {
-    EXIT_CHECK(glfwInit(), "GLFW failed to init");
-
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, 1);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#else
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
-#endif
-
-    window = glfwCreateWindow(width, height, title, nullptr, nullptr);
-    if(!window) {
-        glfwTerminate();
-        EXIT("GLFW failed to create the window");
-    }
-
-    glfwMakeContextCurrent(window);
-    glbinding::Binding::initialize();
-    glfwSwapInterval(1);
-
-    glfwSetWindowSizeCallback(window, windowSizeCallback);
-    windowSizeCallback(window, width, height);
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+namespace {
+    constexpr double MAX_FPS_INTERVAL = (1 / 25.0f);
+    GLPlay::Window *window;
 }
 
 int main() {
-    GLFWwindow * window;
-    int win_width = 640, win_height = 480;
-    initGL(window, win_width, win_height, "GLPlay");
+    GLPlay::ExitCheck(glfwInit(), "GLFW failed to init");
+
+    window = new GLPlay::Window(640, 480, "GLPlay");
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // === BAKE THE FONT ===
 
@@ -128,17 +83,6 @@ int main() {
 
         i+= 4;
     }
-
-    // Shows the entire bitmap
-    /*
-    vertices.push_back(200.0f); vertices.push_back(200.0f); vertices.push_back(0.0f); vertices.push_back(1.0f); vertices.push_back(0.0f);
-    vertices.push_back(200.0f); vertices.push_back(0.0f); vertices.push_back(0.0f); vertices.push_back(1.0f); vertices.push_back(1.0f);
-    vertices.push_back(0.0f); vertices.push_back(0.0f); vertices.push_back(0.0f); vertices.push_back(0.0f); vertices.push_back(1.0f);
-    vertices.push_back(0.0f); vertices.push_back(200.0f); vertices.push_back(0.0f); vertices.push_back(0.0f); vertices.push_back(0.0f);
-
-    indices.push_back(0); indices.push_back(1); indices.push_back(3);
-    indices.push_back(1); indices.push_back(2); indices.push_back(3);
-    */
 
     // === ARRAY / BUFFER OBJECT SETUP ===
 
@@ -199,7 +143,7 @@ int main() {
 
     // === GAME LOOP ===
 
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(window->glfw_window())) {
 
         glfwSetTime(0.0f);
 
@@ -211,7 +155,7 @@ int main() {
 
             glUniform1i(glGetUniformLocation(shaderProgram, "tex0"), 0);
             glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
-            glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
+            glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projMatrix"), 1, GL_FALSE, glm::value_ptr(*window->ui_viewport()->proj_matrix()));
             glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
 
 
@@ -223,7 +167,7 @@ int main() {
             glBindVertexArray(0);
         }
 
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(window->glfw_window());
         glfwPollEvents();
 
         if(glfwGetTime() < MAX_FPS_INTERVAL) {
@@ -241,7 +185,7 @@ int main() {
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
 
-    glfwDestroyWindow(window);
+    glfwDestroyWindow(window->glfw_window());
 
     glfwTerminate();
     exit(EXIT_SUCCESS);
