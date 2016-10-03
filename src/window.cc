@@ -1,7 +1,6 @@
 #include "window.h"
 
-#include <functional>
-
+#include <glbinding/gl/gl.h>
 #include <glbinding/Binding.h>
 
 #include "utils.h"
@@ -14,12 +13,13 @@ extern "C" {
 void WindowResizeCallback(GLFWwindow *glfw_window, int width, int height) {
     GLPlay::Window *window = GLPlay::Window::GetWindowByGlfw(glfw_window);
     window->Resize(width, height);
-    fmt::print("Window was resized! width: {}, height: {}\n", width, height);
 }
 
 }
 
 namespace GLPlay {
+
+using namespace gl;
 
 Window::Window(int width, int height, const char * title) :
     width_{width},
@@ -48,6 +48,9 @@ Window::Window(int width, int height, const char * title) :
     glfwMakeContextCurrent(glfw_window_);
     glbinding::Binding::initialize();
     glfwSwapInterval(1);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     ui_viewport_ = new Viewport(0, 0, width_, height_);
     ui_viewport_->Resize(0, 0, width_, height_);

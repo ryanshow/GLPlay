@@ -1,6 +1,3 @@
-#define STB_RECT_PACK_IMPLEMENTATION
-#define STB_TRUETYPE_IMPLEMENTATION
-
 #include <cstdarg>
 
 #include <thread>
@@ -12,7 +9,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <stb_rect_pack.h>
 #include <stb_truetype.h>
 
 #include "resources/shaders.h"
@@ -24,29 +20,16 @@ using namespace gl;
 
 namespace {
     constexpr double MAX_FPS_INTERVAL = (1 / 25.0f);
-    GLPlay::Window *window;
 }
 
 int main() {
     GLPlay::ExitCheck(glfwInit(), "GLFW failed to init");
 
-    window = new GLPlay::Window(640, 480, "GLPlay");
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    // === BAKE THE FONT ===
-
-    stbtt_pack_context pack_cxt;
-    stbtt_packedchar packed_char[95];
-    unsigned char font_bitmap[256 * 256];
-
-    stbtt_PackBegin(&pack_cxt, font_bitmap, 256, 256, 0, 1, nullptr);
-    stbtt_PackSetOversampling(&pack_cxt, 1, 1);
-    stbtt_PackFontRange(&pack_cxt, const_cast<unsigned char*>(DROID_SANS_MONO), 0, 48.0f, 32, 95, packed_char);
-    stbtt_PackEnd(&pack_cxt);
+    GLPlay::Window *window = new GLPlay::Window(640, 480, "GLPlay");
 
     // === SETUP THE FONT TEXTURE ===
+
+    unsigned char *font_bitmap = GLPlay::CreateTextureAtlas(const_cast<unsigned char*>(DROID_SANS_MONO), 48.0f);
 
     GLuint ftex;
     glGenTextures(1, &ftex);
@@ -172,9 +155,9 @@ int main() {
 
         if(glfwGetTime() < MAX_FPS_INTERVAL) {
             std::this_thread::sleep_for(
-                    std::chrono::microseconds(
-                            int((MAX_FPS_INTERVAL - glfwGetTime()) * 1000000)
-                    )
+                std::chrono::microseconds(
+                    int((MAX_FPS_INTERVAL - glfwGetTime()) * 1000000)
+                )
             );
         }
     }
