@@ -11,6 +11,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <stb_truetype.h>
 
+#include "bitmap_font.h"
 #include "resources/shaders.h"
 #include "resources/fonts.h"
 #include "utils.h"
@@ -27,45 +28,17 @@ int main() {
 
     GLPlay::Window *window = new GLPlay::Window(640, 480, "GLPlay");
 
-    // === SETUP THE FONT TEXTURE ===
-
-    unsigned char *font_bitmap = GLPlay::CreateTextureAtlas(const_cast<unsigned char*>(DROID_SANS_MONO), 48.0f);
-
-    GLuint ftex;
-    glGenTextures(1, &ftex);
-
-    glBindTexture(GL_TEXTURE_2D, ftex); {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 256, 256, 0, GL_RED, GL_UNSIGNED_BYTE, font_bitmap);
-
-        glBindTexture(GL_TEXTURE_2D, 0);
-    }
+    GLPlay::BitmapFont bitmap_font = GLPlay::BitmapFont(const_cast<unsigned char*>(DROID_SANS_MONO), 48.0f);
 
     // == CREATE THE TEXT RENDER MESH ===
 
-    float x = 10.0f;
-    float y = 0.0f;
     std::vector<GLfloat> vertices;
     std::vector<GLuint> indices;
-    stbtt_aligned_quad q;
-    std::string text("GLPlay");
-    unsigned int i=0;
-
-    for(auto c : text) {
-        stbtt_GetPackedQuad(packed_char, 256, 256, c-32, &x, &y, &q, 1);
-
-        vertices.push_back(q.x1); vertices.push_back(-q.y0); vertices.push_back(0.0f); vertices.push_back(q.s1); vertices.push_back(q.t0);
-        vertices.push_back(q.x1); vertices.push_back(-q.y1); vertices.push_back(0.0f); vertices.push_back(q.s1); vertices.push_back(q.t1);
-        vertices.push_back(q.x0); vertices.push_back(-q.y1); vertices.push_back(0.0f); vertices.push_back(q.s0); vertices.push_back(q.t1);
-        vertices.push_back(q.x0); vertices.push_back(-q.y0); vertices.push_back(0.0f); vertices.push_back(q.s0); vertices.push_back(q.t0);
-
-        indices.push_back(i+0); indices.push_back(i+1); indices.push_back(i+3);
-        indices.push_back(i+1); indices.push_back(i+2); indices.push_back(i+3);
-
-        i+= 4;
-    }
+    float offset_x = 0.0f, offset_y = 0.0f;
+    bitmap_font.GenerateTextMesh("Hello World", vertices, indices, offset_x, offset_y);
+    offset_x = 0;
+    offset_y += 100;
+    bitmap_font.GenerateTextMesh("GLPlay", vertices, indices, offset_x, offset_y);
 
     // === ARRAY / BUFFER OBJECT SETUP ===
 
@@ -97,7 +70,7 @@ int main() {
 
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     modelMatrix = glm::rotate(modelMatrix, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 200.0f, 0.0f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(10.0f, 200.0f, 0.0f));
     modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0f, 1.0f, 1.0f));
 
     // ===  SHADER CREATION ===
@@ -143,7 +116,7 @@ int main() {
 
 
             glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, ftex);
+            glBindTexture(GL_TEXTURE_2D, bitmap_font.gl_texture_id());
 
             glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
 
