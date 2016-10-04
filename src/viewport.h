@@ -11,6 +11,10 @@ public:
     void Update();
 
     glm::mat4 * proj_matrix();
+    glm::mat4 * view_matrix();
+
+    int width();
+    int height();
 
 private:
     int x_;
@@ -18,5 +22,6 @@ private:
     int width_;
     int height_;
     glm::mat4 proj_matrix_;
+    glm::mat4 view_matrix_;
 };
 }

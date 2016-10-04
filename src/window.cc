@@ -52,20 +52,15 @@ Window::Window(int width, int height, const char * title) :
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    ui_viewport_ = new Viewport(0, 0, width_, height_);
-    ui_viewport_->Resize(0, 0, width_, height_);
-
     glfwSetWindowSizeCallback(glfw_window_, WindowResizeCallback);
 }
 
 void Window::Resize(int width, int height) {
     width_ = width;
     height_ = height;
-    ui_viewport_->Resize(0, 0, width, height);
-}
-
-Viewport *Window::ui_viewport() {
-    return ui_viewport_;
+    for(auto viewport : viewports_) {
+        viewport->Resize(0, 0, width, height);
+    }
 }
 
 GLFWwindow *Window::glfw_window() {
@@ -74,6 +69,11 @@ GLFWwindow *Window::glfw_window() {
 
 Window *Window::GetWindowByGlfw(GLFWwindow *window) {
     return Window::window_map_[window];
+}
+
+Viewport *Window::CreateViewport() {
+    viewports_.emplace_back(new Viewport(0, 0, width_, height_));
+    return viewports_.back();
 }
 
 int Window::width() {

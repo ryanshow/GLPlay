@@ -1,17 +1,13 @@
 #include <thread>
 
-#include <fmt/format.h>
 #include <glbinding/gl/gl.h>
 #include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 #include "bitmap_font.h"
 #include "renderable.h"
-#include "resources/fonts.h"
 #include "utils.h"
 #include "window.h"
+#include "ui_overlay.h"
 
 using namespace gl;
 
@@ -24,19 +20,10 @@ int main() {
 
     GLPlay::Window *window = new GLPlay::Window(640, 480, "GLPlay");
 
-    GLPlay::BitmapFont bitmap_font = GLPlay::BitmapFont(const_cast<unsigned char*>(DROID_SANS_MONO), 15.0f);
+    GLPlay::UiOverlay *ui_overlay = new GLPlay::UiOverlay(window);
 
-    // == CREATE THE TEXT RENDER MESH ===
-
-    GLPlay::Renderable ui_text = GLPlay::Renderable();
-    *ui_text.model_matrix() = glm::translate(*ui_text.model_matrix(), glm::vec3(0.0f, window->height()-15.0f, 0.0f));
-
-    ui_text.SetTextureFromBitmap(bitmap_font.bitmap(), bitmap_font.bitmap_width(), bitmap_font.bitmap_height());
-
-    glm::mat4 view_matrix = glm::mat4(1.0f);
-    view_matrix *= glm::lookAt(glm::vec3(0.0f, 0.0f, 500.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-    // === GAME LOOP ===
+    int tris_count = 0;
+    double render_time = 0.0f;
 
     while (!glfwWindowShouldClose(window->glfw_window())) {
 
@@ -45,25 +32,31 @@ int main() {
         glClearColor(0.2, 0.2, 0.2, 1.0);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        ui_text.Render(view_matrix, *window->ui_viewport()->proj_matrix());
+        ui_overlay->Render();
 
         glfwSwapBuffers(window->glfw_window());
         glfwPollEvents();
 
+        /*
         float offset_x = 0.0f, offset_y = 0.0f;
         ui_text.vertices_.clear();
         ui_text.indices_.clear();
-        bitmap_font.GenerateTextMesh(fmt::format("Render Time: {}", glfwGetTime()), ui_text.vertices_, ui_text.indices_, offset_x, offset_y);
+        bitmap_font.GenerateTextMesh(fmt::format("Render Time: {:05.2f}ms", render_time*1000), ui_text.vertices_, ui_text.indices_, offset_x, offset_y);
         offset_x = 0.0f;
         offset_y += 15.0f;
-        bitmap_font.GenerateTextMesh(fmt::format("Triangles: {}", ui_text.indices_.size()/3.0f), ui_text.vertices_, ui_text.indices_, offset_x, offset_y);
+        bitmap_font.GenerateTextMesh(fmt::format("Triangles: {}", tris_count), ui_text.vertices_, ui_text.indices_, offset_x, offset_y);
 
         ui_text.Bind();
 
-        if(glfwGetTime() < MAX_FPS_INTERVAL) {
+        tris_count = ui_text.indices_.size()/3;
+        */
+
+        render_time = glfwGetTime();
+
+        if(render_time < MAX_FPS_INTERVAL) {
             std::this_thread::sleep_for(
                 std::chrono::microseconds(
-                    int((MAX_FPS_INTERVAL - glfwGetTime()) * 1000000)
+                    int((MAX_FPS_INTERVAL - render_time) * 1000000)
                 )
             );
         }

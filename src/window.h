@@ -2,6 +2,7 @@
 
 #include <GLFW/glfw3.h>
 #include <map>
+#include <vector>
 
 #include "viewport.h"
 
@@ -13,6 +14,7 @@ public:
 
     void Resize(int width, int height);
     static Window *GetWindowByGlfw(GLFWwindow *glfw_window);
+    Viewport *CreateViewport();
 
     Viewport *ui_viewport();
     GLFWwindow *glfw_window();
@@ -21,11 +23,11 @@ public:
 
 private:
     GLFWwindow *glfw_window_;
-    Viewport *ui_viewport_;
     int width_;
     int height_;
     const char *title_;
     static std::map<GLFWwindow*, Window*> window_map_;
+    std::vector<Viewport*> viewports_;
 };
 
 }
