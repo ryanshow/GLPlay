@@ -14,14 +14,17 @@ public:
     BitmapFont(unsigned char *font_data, float size);
     ~BitmapFont();
 
+    unsigned char *bitmap();
+    int bitmap_width();
+    int bitmap_height();
     stbtt_packedchar *char_data();
-    GLuint gl_texture_id();
 
     void GenerateTextMesh(std::string text, std::vector<GLfloat> &vertices, std::vector<GLuint> &indices, float &offset_x, float &offset_y);
 
+
 private:
     stbtt_packedchar *char_data_;
-    GLuint gl_texture_id_;
+    unsigned char *bitmap_;
     int bitmap_width_;
     int bitmap_height_;
     int start_char_;

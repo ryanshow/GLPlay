@@ -12,35 +12,21 @@ namespace GLPlay {
 BitmapFont::BitmapFont(unsigned char *font_buffer, float size) : bitmap_width_{256}, bitmap_height_{256}, start_char_{32}, char_count_{95} {
     stbtt_pack_context pack_cxt;
     char_data_ = new stbtt_packedchar[char_count_];
-    unsigned char *temp_bitmap = new unsigned char[bitmap_width_ * bitmap_height_];
+    bitmap_ = new unsigned char[bitmap_width_ * bitmap_height_];
 
-    stbtt_PackBegin(&pack_cxt, temp_bitmap, bitmap_width_, bitmap_height_, 0, 1, nullptr);
+    stbtt_PackBegin(&pack_cxt, bitmap_, bitmap_width_, bitmap_height_, 0, 1, nullptr);
     stbtt_PackSetOversampling(&pack_cxt, 1, 1);
     stbtt_PackFontRange(&pack_cxt, font_buffer, 0, size, start_char_, char_count_, char_data_);
     stbtt_PackEnd(&pack_cxt);
-
-    glGenTextures(1, &gl_texture_id_);
-    glBindTexture(GL_TEXTURE_2D, gl_texture_id_); {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, bitmap_width_, bitmap_height_, 0, GL_RED, GL_UNSIGNED_BYTE, temp_bitmap);
-        glBindTexture(GL_TEXTURE_2D, 0);
-    }
-
-    delete[] temp_bitmap;
 }
 
 BitmapFont::~BitmapFont() {
-    glDeleteTextures(1, &gl_texture_id_);
+    delete[] bitmap_;
     delete[] char_data_;
 }
 
 stbtt_packedchar *BitmapFont::char_data() {
     return char_data_;
-}
-
-GLuint BitmapFont::gl_texture_id() {
-    return gl_texture_id_;
 }
 
 void BitmapFont::GenerateTextMesh(std::string text, std::vector<GLfloat> &vertices, std::vector<GLuint> &indices, float &offset_x, float &offset_y) {
@@ -60,6 +46,19 @@ void BitmapFont::GenerateTextMesh(std::string text, std::vector<GLfloat> &vertic
 
         i += 4;
     }
+}
+
+unsigned char *BitmapFont::bitmap() {
+    return bitmap_;
+}
+
+int BitmapFont::bitmap_width() {
+    return bitmap_width_;
+
+}
+
+int BitmapFont::bitmap_height() {
+    return bitmap_height_;
 }
 
 }

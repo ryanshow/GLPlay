@@ -76,4 +76,12 @@ Window *Window::GetWindowByGlfw(GLFWwindow *window) {
     return Window::window_map_[window];
 }
 
+int Window::width() {
+    return width_;
+}
+
+int Window::height() {
+    return height_;
+}
+
 }

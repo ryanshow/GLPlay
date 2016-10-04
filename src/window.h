@@ -12,9 +12,12 @@ public:
     Window(int width, int height, const char * title);
 
     void Resize(int width, int height);
+    static Window *GetWindowByGlfw(GLFWwindow *glfw_window);
+
     Viewport *ui_viewport();
     GLFWwindow *glfw_window();
-    static Window *GetWindowByGlfw(GLFWwindow *glfw_window);
+    int width();
+    int height();
 
 private:
     GLFWwindow *glfw_window_;

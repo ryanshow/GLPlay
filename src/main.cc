@@ -1,5 +1,3 @@
-#include <cstdarg>
-
 #include <thread>
 
 #include <fmt/format.h>
@@ -26,20 +24,14 @@ int main() {
 
     GLPlay::Window *window = new GLPlay::Window(640, 480, "GLPlay");
 
-    GLPlay::BitmapFont bitmap_font = GLPlay::BitmapFont(const_cast<unsigned char*>(DROID_SANS_MONO), 48.0f);
+    GLPlay::BitmapFont bitmap_font = GLPlay::BitmapFont(const_cast<unsigned char*>(DROID_SANS_MONO), 15.0f);
 
     // == CREATE THE TEXT RENDER MESH ===
 
     GLPlay::Renderable ui_text = GLPlay::Renderable();
+    *ui_text.model_matrix() = glm::translate(*ui_text.model_matrix(), glm::vec3(0.0f, window->height()-15.0f, 0.0f));
 
-    float offset_x = 0.0f, offset_y = 0.0f;
-    bitmap_font.GenerateTextMesh("Hello World", ui_text.vertices_, ui_text.indices_, offset_x, offset_y);
-    offset_x = 0;
-    offset_y += 100;
-    bitmap_font.GenerateTextMesh("GLPlay", ui_text.vertices_, ui_text.indices_, offset_x, offset_y);
-
-    ui_text.Bind();
-    ui_text.gl_texture_ = bitmap_font.gl_texture_id();
+    ui_text.SetTextureFromBitmap(bitmap_font.bitmap(), bitmap_font.bitmap_width(), bitmap_font.bitmap_height());
 
     glm::mat4 view_matrix = glm::mat4(1.0f);
     view_matrix *= glm::lookAt(glm::vec3(0.0f, 0.0f, 500.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -57,6 +49,16 @@ int main() {
 
         glfwSwapBuffers(window->glfw_window());
         glfwPollEvents();
+
+        float offset_x = 0.0f, offset_y = 0.0f;
+        ui_text.vertices_.clear();
+        ui_text.indices_.clear();
+        bitmap_font.GenerateTextMesh(fmt::format("Render Time: {}", glfwGetTime()), ui_text.vertices_, ui_text.indices_, offset_x, offset_y);
+        offset_x = 0.0f;
+        offset_y += 15.0f;
+        bitmap_font.GenerateTextMesh(fmt::format("Triangles: {}", ui_text.indices_.size()/3.0f), ui_text.vertices_, ui_text.indices_, offset_x, offset_y);
+
+        ui_text.Bind();
 
         if(glfwGetTime() < MAX_FPS_INTERVAL) {
             std::this_thread::sleep_for(

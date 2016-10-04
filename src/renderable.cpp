@@ -14,7 +14,7 @@ Renderable::Renderable() {
 
     model_matrix_ = glm::mat4(1.0f);
     model_matrix_ = glm::rotate(model_matrix_, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-    model_matrix_ = glm::translate(model_matrix_, glm::vec3(10.0f, 200.0f, 0.0f));
+    model_matrix_ = glm::translate(model_matrix_, glm::vec3(0.0f, 0.0f, 0.0f));
     model_matrix_ = glm::scale(model_matrix_, glm::vec3(1.0f, 1.0f, 1.0f));
 
     const char * shader_ptr;
@@ -79,6 +79,21 @@ void Renderable::Render(glm::mat4 view_matrix, glm::mat4 proj_matrix) {
 
         glBindVertexArray(0);
     }
+}
+
+void Renderable::SetTextureFromBitmap(unsigned char *bitmap, int width, int height) {
+
+    glGenTextures(1, &gl_texture_);
+    glBindTexture(GL_TEXTURE_2D, gl_texture_); {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, bitmap);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+}
+
+glm::mat4 *Renderable::model_matrix() {
+    return &model_matrix_;
 }
 
 }
