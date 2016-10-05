@@ -5,18 +5,27 @@
 #include <vector>
 
 #include "viewport.h"
+#include "event_source.h"
 
 namespace GLPlay {
+
+class ResizeEventData : public EventData {
+public:
+    ResizeEventData(int width, int height) : width_(width), height_(height) {}
+    int width_;
+    int height_;
+};
 
 class Window {
 public:
     Window(int width, int height, const char * title);
 
+    enum WindowEvent {RESIZE_EVENT};
+    EventSource<WindowEvent> event_source_;
+
     void Resize(int width, int height);
     static Window *GetWindowByGlfw(GLFWwindow *glfw_window);
-    Viewport *CreateViewport();
 
-    Viewport *ui_viewport();
     GLFWwindow *glfw_window();
     int width();
     int height();
@@ -27,7 +36,6 @@ private:
     int height_;
     const char *title_;
     static std::map<GLFWwindow*, Window*> window_map_;
-    std::vector<Viewport*> viewports_;
 };
 
 }

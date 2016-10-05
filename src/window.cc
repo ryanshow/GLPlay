@@ -58,9 +58,8 @@ Window::Window(int width, int height, const char * title) :
 void Window::Resize(int width, int height) {
     width_ = width;
     height_ = height;
-    for(auto viewport : viewports_) {
-        viewport->Resize(0, 0, width, height);
-    }
+    ResizeEventData event_data(width, height);
+    event_source_.GenerateEvent(RESIZE_EVENT, event_data);
 }
 
 GLFWwindow *Window::glfw_window() {
@@ -69,11 +68,6 @@ GLFWwindow *Window::glfw_window() {
 
 Window *Window::GetWindowByGlfw(GLFWwindow *window) {
     return Window::window_map_[window];
-}
-
-Viewport *Window::CreateViewport() {
-    viewports_.emplace_back(new Viewport(0, 0, width_, height_));
-    return viewports_.back();
 }
 
 int Window::width() {

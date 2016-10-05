@@ -9,7 +9,7 @@
 namespace GLPlay {
 
 UiOverlay::UiOverlay(Window *window) {
-    viewport_ = window->CreateViewport();
+    viewport_ = new Viewport(0, 0, window->width(), window->height());
 
     BitmapFont bitmap_font = GLPlay::BitmapFont(const_cast<unsigned char*>(DROID_SANS_MONO), 15.0f);
 
@@ -21,6 +21,11 @@ UiOverlay::UiOverlay(Window *window) {
     bitmap_font.GenerateTextMesh(fmt::format("GLPlay"), text_renderable_->vertices_, text_renderable_->indices_, offset_x, offset_y);
 
     text_renderable_->Bind();
+
+    window->event_source_.RegisterHandler(Window::RESIZE_EVENT, [this](const EventData &event_data) {
+        const ResizeEventData & resize_event_data = static_cast<const ResizeEventData&>(event_data);
+        this->viewport_->Resize(0, 0, resize_event_data.width_, resize_event_data.height_);
+    });
 }
 
 void UiOverlay::Render() {
