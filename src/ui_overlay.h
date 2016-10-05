@@ -1,5 +1,6 @@
 #pragma once
 
+#include "bitmap_font.h"
 #include "renderable.h"
 #include "window.h"
 
@@ -13,6 +14,8 @@ public:
 private:
     Renderable *text_renderable_;
     Viewport *viewport_;
+    float font_size_;
+    BitmapFont *bitmap_font_;
 };
 
 }

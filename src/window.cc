@@ -58,8 +58,7 @@ Window::Window(int width, int height, const char * title) :
 void Window::Resize(int width, int height) {
     width_ = width;
     height_ = height;
-    ResizeEventData event_data(width, height);
-    event_source_.GenerateEvent(RESIZE_EVENT, event_data);
+    event_source_.GenerateEvent(RESIZE_EVENT, ResizeEventData(width, height));
 }
 
 GLFWwindow *Window::glfw_window() {

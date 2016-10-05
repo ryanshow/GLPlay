@@ -18,7 +18,13 @@ public:
     void Render(glm::mat4 view_matrix, glm::mat4 proj_matrix);
     void SetTextureFromBitmap(unsigned char *bitmap, int width, int height);
 
-    glm::mat4 *model_matrix();
+    void SetTranslation(const glm::vec3 & translation);
+    void SetRotation(const float rotation_theta, const glm::vec3 & rotation);
+    void SetScale(const glm::vec3 & scale);
+
+    void CalculateModelMatrix();
+
+    glm::mat4 & model_matrix();
     std::vector<GLfloat> vertices_;
     std::vector<GLuint> indices_;
 private:
@@ -27,6 +33,10 @@ private:
     GLuint gl_buffers_[2];
     GLuint gl_objects_[1];
     GLuint gl_shader_;
+    glm::vec3 translation_;
+    float rotation_theta_;
+    glm::vec3 rotation_vector_;
+    glm::vec3 scale_;
     glm::mat4 model_matrix_;
     GLuint gl_texture_;
 };

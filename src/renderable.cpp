@@ -12,11 +12,6 @@ Renderable::Renderable() {
     glGenBuffers(2, gl_buffers_);
     glGenVertexArrays(1, gl_objects_);
 
-    model_matrix_ = glm::mat4(1.0f);
-    model_matrix_ = glm::rotate(model_matrix_, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-    model_matrix_ = glm::translate(model_matrix_, glm::vec3(0.0f, 0.0f, 0.0f));
-    model_matrix_ = glm::scale(model_matrix_, glm::vec3(1.0f, 1.0f, 1.0f));
-
     const char * shader_ptr;
     GLuint vertexShader, fragmentShader;
 
@@ -37,6 +32,13 @@ Renderable::Renderable() {
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
+
+    rotation_theta_ = 0.0f;
+    rotation_vector_ = glm::vec3(1.0f, 0.0f, 0.0f);
+    translation_ = glm::vec3(0.0f, 0.0f, 0.0f);
+    scale_  = glm::vec3(1.0f, 1.0f, 1.0f);
+
+    CalculateModelMatrix();
 }
 
 Renderable::~Renderable() {
@@ -82,7 +84,6 @@ void Renderable::Render(glm::mat4 view_matrix, glm::mat4 proj_matrix) {
 }
 
 void Renderable::SetTextureFromBitmap(unsigned char *bitmap, int width, int height) {
-
     glGenTextures(1, &gl_texture_);
     glBindTexture(GL_TEXTURE_2D, gl_texture_); {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -92,8 +93,37 @@ void Renderable::SetTextureFromBitmap(unsigned char *bitmap, int width, int heig
     }
 }
 
-glm::mat4 *Renderable::model_matrix() {
-    return &model_matrix_;
+void Renderable::CalculateModelMatrix() {
+    model_matrix_ = glm::mat4(1.0f);
+    model_matrix_ = glm::rotate(model_matrix_, rotation_theta_, rotation_vector_);
+    model_matrix_ = glm::translate(model_matrix_, translation_);
+    model_matrix_ = glm::scale(model_matrix_, scale_);
+}
+
+void Renderable::SetTranslation(const glm::vec3 & translation) {
+    translation_.x = translation.x;
+    translation_.y = translation.y;
+    translation_.z = translation.z;
+    CalculateModelMatrix();
+}
+
+void Renderable::SetRotation(const float rotation_theta, const glm::vec3 & rotation_vector) {
+    rotation_theta_ = rotation_theta;
+    rotation_vector_.x = rotation_vector.x;
+    rotation_vector_.y = rotation_vector.y;
+    rotation_vector_.z = rotation_vector.z;
+    CalculateModelMatrix();
+}
+
+void Renderable::SetScale(const glm::vec3 & scale) {
+    scale_.x = scale.x;
+    scale_.y = scale.y;
+    scale_.z = scale.z;
+    CalculateModelMatrix();
+}
+
+glm::mat4 & Renderable::model_matrix() {
+    return model_matrix_;
 }
 
 }
