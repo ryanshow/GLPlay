@@ -4,6 +4,7 @@
 
 #include <glbinding/gl/gl.h>
 #include <glm/glm.hpp>
+#include <map>
 
 using namespace gl;
 
@@ -27,6 +28,12 @@ public:
     glm::mat4 & model_matrix();
     std::vector<GLfloat> vertices_;
     std::vector<GLuint> indices_;
+
+    // TODO: Probably replace this with a manager class
+    static bool bound_dirty_;
+    static std::map<int, Renderable*> renderables_;
+    static int handle_count_;
+
 private:
     enum gl_buffer_types { ARRAY_BUFFER = 0, ELEMENT_ARRAY_BUFFER = 1 };
     enum gl_object_types { ARRAY_OBJECT = 0 };
@@ -39,6 +46,7 @@ private:
     glm::vec3 scale_;
     glm::mat4 model_matrix_;
     GLuint gl_texture_;
+    int handle_;
 };
 
 }

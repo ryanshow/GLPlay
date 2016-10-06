@@ -25,10 +25,11 @@ int main() {
     int info_text_avg_frame_time = ui_overlay->AddInfoText("Frame Avg: ");
     int info_text_min_frame_time = ui_overlay->AddInfoText("Frame Min: ");
     int info_text_max_frame_time = ui_overlay->AddInfoText("Frame Max: ");
+    int info_text_tris = ui_overlay->AddInfoText("Triangles: ");
 
     double render_time, min_render_time, max_render_time, avg_render_time;
     double rolling_render_time[MAX_FPS];
-    int ticks = 0;
+    int ticks = 0, tris = 0;
 
     while (!glfwWindowShouldClose(window->glfw_window())) {
 
@@ -53,9 +54,18 @@ int main() {
             }
             avg_render_time /= MAX_FPS;
 
+            if (GLPlay::Renderable::bound_dirty_) {
+                tris = 0;
+                for (auto renderable : GLPlay::Renderable::renderables_) {
+                    tris += renderable.second->indices_.size()/3;
+                }
+                GLPlay::Renderable::bound_dirty_ = false;
+            }
+
             ui_overlay->UpdateInfoText(info_text_avg_frame_time, fmt::format("Frame Avg: {:5.2f}ms ({:5.1f} FPS)", avg_render_time * 1000, 1.0f / avg_render_time));
             ui_overlay->UpdateInfoText(info_text_min_frame_time, fmt::format("Frame Min: {:5.2f}ms ({:5.1f} FPS)", min_render_time * 1000, 1.0f / min_render_time));
             ui_overlay->UpdateInfoText(info_text_max_frame_time, fmt::format("Frame Max: {:5.2f}ms ({:5.1f} FPS)", max_render_time * 1000, 1.0f / max_render_time));
+            ui_overlay->UpdateInfoText(info_text_tris, fmt::format("Triangles: {}", tris));
             ticks = 0;
         }
 

@@ -9,6 +9,10 @@
 
 namespace GLPlay {
 
+bool Renderable::bound_dirty_ = false;
+std::map<int, Renderable*> Renderable::renderables_;
+int Renderable::handle_count_ = 0;
+
 Renderable::Renderable() {
     glGenBuffers(2, gl_buffers_);
     glGenVertexArrays(1, gl_objects_);
@@ -42,12 +46,16 @@ Renderable::Renderable() {
     scale_  = glm::vec3(1.0f, 1.0f, 1.0f);
 
     CalculateModelMatrix();
+
+    handle_ = handle_count_++;
+    renderables_.emplace(handle_, this);
 }
 
 Renderable::~Renderable() {
     fmt::print("Destroying VAO: {}\n", gl_objects_[ARRAY_OBJECT]);
     glDeleteVertexArrays(1, gl_objects_);
     glDeleteBuffers(2, gl_buffers_);
+    renderables_.erase(handle_);
 }
 
 void Renderable::Bind() {
@@ -65,6 +73,8 @@ void Renderable::Bind() {
         glEnableVertexAttribArray(1);
 
         glBindVertexArray(0);
+
+        bound_dirty_ = true;
     }
 
 }
