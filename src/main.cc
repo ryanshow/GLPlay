@@ -72,8 +72,8 @@ int main() {
         }
     }
 
-
-    glfwDestroyWindow(window->glfw_window());
+    delete ui_overlay;
+    delete window;
 
     glfwTerminate();
     exit(EXIT_SUCCESS);

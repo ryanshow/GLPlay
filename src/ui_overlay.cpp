@@ -33,6 +33,14 @@ UiOverlay::UiOverlay(Window *window) {
     window->event_source_.RegisterHandler(Window::RESIZE_EVENT, window_resize_callback);
 }
 
+UiOverlay::~UiOverlay() {
+    delete viewport_;
+    delete bitmap_font_;
+    for (auto info_text : text_renderable_map_) {
+        delete info_text.second.renderable_;
+    }
+}
+
 void UiOverlay::Update() {
     float x, y;
 

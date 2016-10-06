@@ -9,6 +9,7 @@ namespace GLPlay {
 class UiOverlay {
 public:
     UiOverlay(Window *window);
+    ~UiOverlay();
 
     int AddInfoText(std::string text);
     void UpdateInfoText(int handler, std::string text);

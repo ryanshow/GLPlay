@@ -55,6 +55,11 @@ Window::Window(int width, int height, const char * title) :
     glfwSetWindowSizeCallback(glfw_window_, WindowResizeCallback);
 }
 
+Window::~Window() {
+    fmt::print("Destroying Window");
+    glfwDestroyWindow(glfw_window_);
+}
+
 void Window::Resize(int width, int height) {
     width_ = width;
     height_ = height;
