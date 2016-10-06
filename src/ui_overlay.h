@@ -13,16 +13,21 @@ public:
     int AddInfoText(std::string text);
     void UpdateInfoText(int handler, std::string text);
 
-    void Update();
-
     void Render();
 private:
-    Renderable *text_renderable_;
+    void Update();
+
     Viewport *viewport_;
     float font_size_;
     BitmapFont *bitmap_font_;
-    std::map<int, std::string> info_text_;
     static int info_text_counter_;
+
+    struct TextRenderable {
+        std::string info_text_;
+        Renderable * renderable_;
+        bool dirty_;
+    };
+    std::map<int, TextRenderable> text_renderable_map_;
 };
 
 }

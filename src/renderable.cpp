@@ -2,6 +2,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <fmt/format.h>
 
 #include "resources/shaders.h"
 
@@ -11,6 +12,8 @@ namespace GLPlay {
 Renderable::Renderable() {
     glGenBuffers(2, gl_buffers_);
     glGenVertexArrays(1, gl_objects_);
+
+    fmt::print("Creating VAO: {}\n", gl_objects_[ARRAY_OBJECT]);
 
     const char * shader_ptr;
     GLuint vertexShader, fragmentShader;
@@ -42,6 +45,7 @@ Renderable::Renderable() {
 }
 
 Renderable::~Renderable() {
+    fmt::print("Destroying VAO: {}\n", gl_objects_[ARRAY_OBJECT]);
     glDeleteVertexArrays(1, gl_objects_);
     glDeleteBuffers(2, gl_buffers_);
 }
@@ -101,24 +105,18 @@ void Renderable::CalculateModelMatrix() {
 }
 
 void Renderable::SetTranslation(const glm::vec3 & translation) {
-    translation_.x = translation.x;
-    translation_.y = translation.y;
-    translation_.z = translation.z;
+    translation_ = translation;
     CalculateModelMatrix();
 }
 
 void Renderable::SetRotation(const float rotation_theta, const glm::vec3 & rotation_vector) {
     rotation_theta_ = rotation_theta;
-    rotation_vector_.x = rotation_vector.x;
-    rotation_vector_.y = rotation_vector.y;
-    rotation_vector_.z = rotation_vector.z;
+    rotation_vector_ = rotation_vector;
     CalculateModelMatrix();
 }
 
 void Renderable::SetScale(const glm::vec3 & scale) {
-    scale_.x = scale.x;
-    scale_.y = scale.y;
-    scale_.z = scale.z;
+    scale_ = scale;
     CalculateModelMatrix();
 }
 

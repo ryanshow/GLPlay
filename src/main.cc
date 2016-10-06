@@ -12,9 +12,9 @@
 using namespace gl;
 
 namespace {
-    constexpr double MAX_FPS_INTERVAL = (1 / 25.0f);
+    constexpr int MAX_FPS = 25;
+    constexpr double MAX_FPS_INTERVAL = (1.0f / MAX_FPS);
 }
-
 int main() {
     GLPlay::ExitCheck(glfwInit(), "GLFW failed to init");
 
@@ -22,9 +22,13 @@ int main() {
 
     GLPlay::UiOverlay *ui_overlay = new GLPlay::UiOverlay(window);
 
-    int info_text_frame_time = ui_overlay->AddInfoText("Frame: ");
+    int info_text_avg_frame_time = ui_overlay->AddInfoText("Frame Avg: ");
+    int info_text_min_frame_time = ui_overlay->AddInfoText("Frame Min: ");
+    int info_text_max_frame_time = ui_overlay->AddInfoText("Frame Max: ");
 
-    double render_time;
+    double render_time, min_render_time, max_render_time, avg_render_time;
+    double rolling_render_time[MAX_FPS];
+    int ticks = 0;
 
     while (!glfwWindowShouldClose(window->glfw_window())) {
 
@@ -38,8 +42,26 @@ int main() {
         glfwSwapBuffers(window->glfw_window());
         glfwPollEvents();
 
+        if (ticks == MAX_FPS) {
+            min_render_time = -1.0f;
+            max_render_time = -1.0f;
+            avg_render_time = 0.0f;
+            for (int i = 0; i < MAX_FPS; i++) {
+                avg_render_time += rolling_render_time[i];
+                if (min_render_time < 0 || rolling_render_time[i] < min_render_time) min_render_time = rolling_render_time[i];
+                if (max_render_time < 0 || rolling_render_time[i] > max_render_time) max_render_time = rolling_render_time[i];
+            }
+            avg_render_time /= MAX_FPS;
+
+            ui_overlay->UpdateInfoText(info_text_avg_frame_time, fmt::format("Frame Avg: {:5.2f}ms ({:5.1f} FPS)", avg_render_time * 1000, 1.0f / avg_render_time));
+            ui_overlay->UpdateInfoText(info_text_min_frame_time, fmt::format("Frame Min: {:5.2f}ms ({:5.1f} FPS)", min_render_time * 1000, 1.0f / min_render_time));
+            ui_overlay->UpdateInfoText(info_text_max_frame_time, fmt::format("Frame Max: {:5.2f}ms ({:5.1f} FPS)", max_render_time * 1000, 1.0f / max_render_time));
+            ticks = 0;
+        }
+
         render_time = glfwGetTime();
-        ui_overlay->UpdateInfoText(info_text_frame_time, fmt::format("Frame: {:5.2f}", render_time*1000));
+
+        rolling_render_time[ticks++] = render_time;
 
         if(render_time < MAX_FPS_INTERVAL) {
             std::this_thread::sleep_for(
