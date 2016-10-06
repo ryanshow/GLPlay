@@ -16,7 +16,7 @@ public:
 
     void Render();
 private:
-    void Update();
+    void Update(int handler);
 
     Viewport *viewport_;
     float font_size_;

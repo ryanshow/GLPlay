@@ -5,6 +5,7 @@
 #include <glbinding/gl/gl.h>
 #include <glm/glm.hpp>
 #include <map>
+#include "vertex.h"
 
 using namespace gl;
 
@@ -23,11 +24,13 @@ public:
     void SetRotation(const float rotation_theta, const glm::vec3 & rotation);
     void SetScale(const glm::vec3 & scale);
 
+    void AddMesh(std::vector<Vertex> & vertices, std::vector<GLuint> & indices);
+    void ClearMesh();
+    int Triangles();
+
     void CalculateModelMatrix();
 
     glm::mat4 & model_matrix();
-    std::vector<GLfloat> vertices_;
-    std::vector<GLuint> indices_;
 
     // TODO: Probably replace this with a manager class
     static bool bound_dirty_;
@@ -47,6 +50,10 @@ private:
     glm::mat4 model_matrix_;
     GLuint gl_texture_;
     int handle_;
+
+    std::vector<Vertex> vertices_;
+    std::vector<GLuint> indices_;
+
 };
 
 }

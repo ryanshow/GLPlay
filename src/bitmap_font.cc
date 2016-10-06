@@ -4,6 +4,9 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #include <stb_rect_pack.h>
 #include <stb_truetype.h>
+#include <fmt/format.h>
+
+#include "vertex.h"
 
 using namespace gl;
 
@@ -29,22 +32,24 @@ stbtt_packedchar *BitmapFont::char_data() {
     return char_data_;
 }
 
-void BitmapFont::GenerateTextMesh(std::string text, std::vector<GLfloat> &vertices, std::vector<GLuint> &indices, float &offset_x, float &offset_y) {
-    unsigned int i = indices.size()/6*4;
+void BitmapFont::GenerateTextMesh(std::string text, Renderable & renderable, float &offset_x, float &offset_y) {
     stbtt_aligned_quad q;
-
-    for(auto c : text) {
+    for (auto c : text) {
         stbtt_GetPackedQuad(char_data(), bitmap_width_, bitmap_height_, c-start_char_, &offset_x, &offset_y, &q, 1);
 
-        vertices.push_back(q.x1); vertices.push_back(-q.y0); vertices.push_back(0.0f); vertices.push_back(q.s1); vertices.push_back(q.t0);
-        vertices.push_back(q.x1); vertices.push_back(-q.y1); vertices.push_back(0.0f); vertices.push_back(q.s1); vertices.push_back(q.t1);
-        vertices.push_back(q.x0); vertices.push_back(-q.y1); vertices.push_back(0.0f); vertices.push_back(q.s0); vertices.push_back(q.t1);
-        vertices.push_back(q.x0); vertices.push_back(-q.y0); vertices.push_back(0.0f); vertices.push_back(q.s0); vertices.push_back(q.t0);
+        std::vector<Vertex> verts = {
+            {{q.x1, -q.y0, 0.0f}, {}, {}, {q.s1, q.t0}, {}},
+            {{q.x1, -q.y1, 0.0f}, {}, {}, {q.s1, q.t1}, {}},
+            {{q.x0, -q.y1, 0.0f}, {}, {}, {q.s0, q.t1}, {}},
+            {{q.x0, -q.y0, 0.0f}, {}, {}, {q.s0, q.t0}, {}}
+        };
 
-        indices.push_back(i+0); indices.push_back(i+1); indices.push_back(i+3);
-        indices.push_back(i+1); indices.push_back(i+2); indices.push_back(i+3);
+        std::vector<GLuint> indices = {
+            0, 1, 3,
+            1, 2, 3
+        };
 
-        i += 4;
+        renderable.AddMesh(verts, indices);
     }
 }
 

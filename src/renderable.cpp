@@ -61,22 +61,56 @@ Renderable::~Renderable() {
 void Renderable::Bind() {
     glBindVertexArray(gl_objects_[ARRAY_OBJECT]); {
         glBindBuffer(GL_ARRAY_BUFFER, gl_buffers_[ARRAY_BUFFER]);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*vertices_.size(), vertices_.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex)*vertices_.size(), vertices_.data(), GL_STATIC_DRAW);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_buffers_[ELEMENT_ARRAY_BUFFER]);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*indices_.size(), indices_.data(), GL_STATIC_DRAW);
 
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+        // Position
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(offsetof(Vertex, pos)));
         glEnableVertexAttribArray(0);
 
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+        // Normal
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(offsetof(Vertex, nor)));
         glEnableVertexAttribArray(1);
+
+        // Color
+        glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(offsetof(Vertex, col)));
+        glEnableVertexAttribArray(2);
+
+        // Texture 0
+        glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(offsetof(Vertex, tx0)));
+        glEnableVertexAttribArray(3);
+
+        // Texture 1
+        glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(offsetof(Vertex, tx1)));
+        glEnableVertexAttribArray(4);
 
         glBindVertexArray(0);
 
         bound_dirty_ = true;
     }
 
+}
+
+int Renderable::Triangles() {
+    return indices_.size()/3;
+}
+
+void Renderable::AddMesh(std::vector<Vertex> & vertices, std::vector<GLuint> & indices) {
+    int i = vertices_.size();
+    for (auto vertex : vertices) {
+        vertices_.emplace_back(vertex);
+    }
+    for (auto index : indices) {
+        indices_.emplace_back(i+index);
+    }
+    Bind();
+}
+
+void Renderable::ClearMesh() {
+    vertices_.clear();
+    indices_.clear();
 }
 
 void Renderable::Render(glm::mat4 view_matrix, glm::mat4 proj_matrix) {

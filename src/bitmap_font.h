@@ -5,6 +5,8 @@
 #include <glbinding/gl/gl.h>
 #include <stb_truetype.h>
 
+#include "renderable.h"
+
 using namespace gl;
 
 namespace GLPlay {
@@ -19,8 +21,7 @@ public:
     int bitmap_height();
     stbtt_packedchar *char_data();
 
-    void GenerateTextMesh(std::string text, std::vector<GLfloat> &vertices, std::vector<GLuint> &indices, float &offset_x, float &offset_y);
-
+    void GenerateTextMesh(std::string text, Renderable & renderable, float &offset_x, float &offset_y);
 
 private:
     stbtt_packedchar *char_data_;

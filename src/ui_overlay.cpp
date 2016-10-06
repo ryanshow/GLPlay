@@ -41,27 +41,23 @@ UiOverlay::~UiOverlay() {
     }
 }
 
-void UiOverlay::Update() {
+void UiOverlay::Update(int handle) {
     float x, y;
+    TextRenderable &text_renderable = text_renderable_map_[handle];
 
-    for (auto info_text : text_renderable_map_) {
-        if (!info_text.second.dirty_) continue;
-
-        x = 0.0f;
-        y = 0.0f;
-        info_text.second.renderable_->vertices_.clear();
-        info_text.second.renderable_->indices_.clear();
-        bitmap_font_->GenerateTextMesh(info_text.second.info_text_, info_text.second.renderable_->vertices_, info_text.second.renderable_->indices_, x, y);
-        info_text.second.renderable_->SetTranslation(glm::vec3(0.0f, viewport_->height()-(font_size_*(info_text.first+1)), 0.0f));
-        info_text.second.renderable_->Bind();
-        info_text.second.dirty_ = false;
-    }
+    x = 0.0f;
+    y = 0.0f;
+    text_renderable.renderable_->ClearMesh();
+    bitmap_font_->GenerateTextMesh(text_renderable.info_text_, *text_renderable.renderable_, x, y);
+    text_renderable.renderable_->SetTranslation(glm::vec3(0.0f, viewport_->height()-(font_size_*(handle+1)), 0.0f));
+    text_renderable.renderable_->Bind();
+    text_renderable.dirty_ = false;
 }
 
 void UiOverlay::Render() {
     for (auto info_text : text_renderable_map_) {
         if (info_text.second.dirty_) {
-            Update(); // TODO: Update should be passed a handler
+            Update(info_text.first); // TODO: Update should be passed a handler
         }
         info_text.second.renderable_->Render(*viewport_->view_matrix(), *viewport_->proj_matrix());
     }

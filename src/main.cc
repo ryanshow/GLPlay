@@ -43,7 +43,7 @@ int main() {
         glfwSwapBuffers(window->glfw_window());
         glfwPollEvents();
 
-        if (ticks == MAX_FPS) {
+        if (ticks != 0 && ticks % MAX_FPS == 0) {
             min_render_time = -1.0f;
             max_render_time = -1.0f;
             avg_render_time = 0.0f;
@@ -54,24 +54,23 @@ int main() {
             }
             avg_render_time /= MAX_FPS;
 
-            if (GLPlay::Renderable::bound_dirty_) {
-                tris = 0;
-                for (auto renderable : GLPlay::Renderable::renderables_) {
-                    tris += renderable.second->indices_.size()/3;
-                }
-                GLPlay::Renderable::bound_dirty_ = false;
-            }
-
-            ui_overlay->UpdateInfoText(info_text_avg_frame_time, fmt::format("Frame Avg: {:5.2f}ms ({:5.1f} FPS)", avg_render_time * 1000, 1.0f / avg_render_time));
             ui_overlay->UpdateInfoText(info_text_min_frame_time, fmt::format("Frame Min: {:5.2f}ms ({:5.1f} FPS)", min_render_time * 1000, 1.0f / min_render_time));
+            ui_overlay->UpdateInfoText(info_text_avg_frame_time, fmt::format("Frame Avg: {:5.2f}ms ({:5.1f} FPS)", avg_render_time * 1000, 1.0f / avg_render_time));
             ui_overlay->UpdateInfoText(info_text_max_frame_time, fmt::format("Frame Max: {:5.2f}ms ({:5.1f} FPS)", max_render_time * 1000, 1.0f / max_render_time));
+        }
+
+        if (GLPlay::Renderable::bound_dirty_) {
+            tris = 0;
+            for (auto renderable : GLPlay::Renderable::renderables_) {
+                tris += renderable.second->Triangles();
+            }
+            GLPlay::Renderable::bound_dirty_ = false;
             ui_overlay->UpdateInfoText(info_text_tris, fmt::format("Triangles: {}", tris));
-            ticks = 0;
         }
 
         render_time = glfwGetTime();
 
-        rolling_render_time[ticks++] = render_time;
+        rolling_render_time[ticks++ % MAX_FPS] = render_time;
 
         if(render_time < MAX_FPS_INTERVAL) {
             std::this_thread::sleep_for(
