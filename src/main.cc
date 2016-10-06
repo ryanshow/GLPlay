@@ -22,8 +22,9 @@ int main() {
 
     GLPlay::UiOverlay *ui_overlay = new GLPlay::UiOverlay(window);
 
-    int tris_count = 0;
-    double render_time = 0.0f;
+    int info_text_frame_time = ui_overlay->AddInfoText("Frame: ");
+
+    double render_time;
 
     while (!glfwWindowShouldClose(window->glfw_window())) {
 
@@ -37,21 +38,8 @@ int main() {
         glfwSwapBuffers(window->glfw_window());
         glfwPollEvents();
 
-        /*
-        float offset_x = 0.0f, offset_y = 0.0f;
-        ui_text.vertices_.clear();
-        ui_text.indices_.clear();
-        bitmap_font.GenerateTextMesh(fmt::format("Render Time: {:05.2f}ms", render_time*1000), ui_text.vertices_, ui_text.indices_, offset_x, offset_y);
-        offset_x = 0.0f;
-        offset_y += 15.0f;
-        bitmap_font.GenerateTextMesh(fmt::format("Triangles: {}", tris_count), ui_text.vertices_, ui_text.indices_, offset_x, offset_y);
-
-        ui_text.Bind();
-
-        tris_count = ui_text.indices_.size()/3;
-        */
-
         render_time = glfwGetTime();
+        ui_overlay->UpdateInfoText(info_text_frame_time, fmt::format("Frame: {:5.2f}", render_time*1000));
 
         if(render_time < MAX_FPS_INTERVAL) {
             std::this_thread::sleep_for(
