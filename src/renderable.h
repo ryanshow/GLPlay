@@ -6,10 +6,18 @@
 #include <glm/glm.hpp>
 #include <map>
 #include "vertex.h"
+#include "event_source.h"
 
 using namespace gl;
 
 namespace GLPlay {
+
+class VertexEventData : public EventData {
+public:
+    VertexEventData(int vertices, int indices) : vertices_(vertices), indices_(indices) {}
+    int vertices_;
+    int indices_;
+};
 
 class Renderable {
 public:
@@ -36,6 +44,9 @@ public:
     static bool bound_dirty_;
     static std::map<int, Renderable*> renderables_;
     static int handle_count_;
+
+    enum RenderableEvent {VERTEX_EVENT};
+    static EventSource<RenderableEvent> event_source_;
 
 private:
     enum gl_buffer_types { ARRAY_BUFFER = 0, ELEMENT_ARRAY_BUFFER = 1 };

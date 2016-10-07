@@ -8,6 +8,7 @@
 #include "utils.h"
 #include "window.h"
 #include "ui_overlay.h"
+#include "renderable.h"
 
 using namespace gl;
 
@@ -29,7 +30,14 @@ int main() {
 
     double render_time, min_render_time, max_render_time, avg_render_time;
     double rolling_render_time[MAX_FPS];
-    int ticks = 0, tris = 0;
+    int ticks = 0, tris = 0, rendered_tris = -1;
+
+    auto vertex_callback = [&](const GLPlay::EventData &event_data) {
+        const GLPlay::VertexEventData & vertex_event_data = static_cast<const GLPlay::VertexEventData&>(event_data);
+        tris += (vertex_event_data.indices_/3);
+    };
+
+    GLPlay::Renderable::event_source_.RegisterHandler(GLPlay::Renderable::VERTEX_EVENT, vertex_callback);
 
     while (!glfwWindowShouldClose(window->glfw_window())) {
 
@@ -59,13 +67,9 @@ int main() {
             ui_overlay->UpdateInfoText(info_text_max_frame_time, fmt::format("Frame Max: {:5.2f}ms ({:5.1f} FPS)", max_render_time * 1000, 1.0f / max_render_time));
         }
 
-        if (GLPlay::Renderable::bound_dirty_) {
-            tris = 0;
-            for (auto renderable : GLPlay::Renderable::renderables_) {
-                tris += renderable.second->Triangles();
-            }
-            GLPlay::Renderable::bound_dirty_ = false;
+        if (tris != rendered_tris) {
             ui_overlay->UpdateInfoText(info_text_tris, fmt::format("Triangles: {}", tris));
+            rendered_tris = tris;
         }
 
         render_time = glfwGetTime();

@@ -23,7 +23,7 @@ UiOverlay::UiOverlay(Window *window) {
         viewport_->Resize(0, 0, resize_event_data.width_, resize_event_data.height_);
         UpdateInfoText(info_text_win_size, fmt::format("Window: {}, {}", resize_event_data.width_, resize_event_data.height_));
 
-        for (auto info_text : text_renderable_map_) {
+        for (auto & info_text : text_renderable_map_) {
             info_text.second.dirty_ = true;
         }
     };
@@ -36,7 +36,7 @@ UiOverlay::UiOverlay(Window *window) {
 UiOverlay::~UiOverlay() {
     delete viewport_;
     delete bitmap_font_;
-    for (auto info_text : text_renderable_map_) {
+    for (auto & info_text : text_renderable_map_) {
         delete info_text.second.renderable_;
     }
 }
@@ -55,7 +55,7 @@ void UiOverlay::Update(int handle) {
 }
 
 void UiOverlay::Render() {
-    for (auto info_text : text_renderable_map_) {
+    for (auto & info_text : text_renderable_map_) {
         if (info_text.second.dirty_) {
             Update(info_text.first); // TODO: Update should be passed a handler
         }

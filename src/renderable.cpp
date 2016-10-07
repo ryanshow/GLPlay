@@ -13,6 +13,8 @@ bool Renderable::bound_dirty_ = false;
 std::map<int, Renderable*> Renderable::renderables_;
 int Renderable::handle_count_ = 0;
 
+EventSource<Renderable::RenderableEvent> Renderable::event_source_;
+
 Renderable::Renderable() {
     glGenBuffers(2, gl_buffers_);
     glGenVertexArrays(1, gl_objects_);
@@ -99,16 +101,18 @@ int Renderable::Triangles() {
 
 void Renderable::AddMesh(std::vector<Vertex> & vertices, std::vector<GLuint> & indices) {
     int i = vertices_.size();
-    for (auto vertex : vertices) {
+    for (auto & vertex : vertices) {
         vertices_.emplace_back(vertex);
     }
-    for (auto index : indices) {
+    for (auto & index : indices) {
         indices_.emplace_back(i+index);
     }
     Bind();
+    event_source_.GenerateEvent(VERTEX_EVENT, VertexEventData(vertices.size(), indices.size()));
 }
 
 void Renderable::ClearMesh() {
+    event_source_.GenerateEvent(VERTEX_EVENT, VertexEventData(-vertices_.size(), -indices_.size()));
     vertices_.clear();
     indices_.clear();
 }

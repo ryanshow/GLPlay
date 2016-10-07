@@ -24,7 +24,7 @@ private:
 
 template<typename T>
 void EventSource<T>::GenerateEvent(const T event_type, const EventData & event_data) {
-    for (auto handler : registered_handlers_[event_type]) {
+    for (auto & handler : registered_handlers_[event_type]) {
         handler(event_data);
     }
 }
