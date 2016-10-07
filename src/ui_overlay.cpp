@@ -12,7 +12,7 @@ int UiOverlay::info_text_counter_ = 0;
 UiOverlay::UiOverlay(Window *window) {
     font_size_ = 13.0f;
 
-    viewport_ = new Viewport(0, 0, window->width(), window->height());
+    viewport_ = new OrthoViewport(window->width(), window->height());
 
     bitmap_font_ = new BitmapFont(const_cast<unsigned char*>(DROID_SANS_MONO), font_size_);
 
@@ -20,7 +20,7 @@ UiOverlay::UiOverlay(Window *window) {
 
     auto window_resize_callback = [info_text_win_size, this](const EventData &event_data) {
         const ResizeEventData & resize_event_data = static_cast<const ResizeEventData&>(event_data);
-        viewport_->Resize(0, 0, resize_event_data.width_, resize_event_data.height_);
+        viewport_->Resize(resize_event_data.width_, resize_event_data.height_);
         UpdateInfoText(info_text_win_size, fmt::format("Window: {}, {}", resize_event_data.width_, resize_event_data.height_));
 
         for (auto & info_text : text_renderable_map_) {
@@ -59,7 +59,7 @@ void UiOverlay::Render() {
         if (info_text.second.dirty_) {
             Update(info_text.first); // TODO: Update should be passed a handler
         }
-        info_text.second.renderable_->Render(*viewport_->view_matrix(), *viewport_->proj_matrix());
+        info_text.second.renderable_->Render(viewport_->view_matrix(), viewport_->proj_matrix());
     }
 
 }

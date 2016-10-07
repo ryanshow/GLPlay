@@ -3,6 +3,7 @@
 #include "bitmap_font.h"
 #include "renderable.h"
 #include "window.h"
+#include "ortho_viewport.h"
 
 namespace GLPlay {
 
@@ -18,7 +19,7 @@ public:
 private:
     void Update(int handler);
 
-    Viewport *viewport_;
+    OrthoViewport *viewport_;
     float font_size_;
     BitmapFont *bitmap_font_;
     static int info_text_counter_;

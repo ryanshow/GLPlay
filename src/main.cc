@@ -12,7 +12,7 @@
 using namespace gl;
 
 namespace {
-    constexpr int MAX_FPS = 25;
+    constexpr int MAX_FPS = 30;
     constexpr double MAX_FPS_INTERVAL = (1.0f / MAX_FPS);
 }
 int main() {
