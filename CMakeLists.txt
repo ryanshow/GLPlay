@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.6)
+
 project(GLPlay)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
@@ -16,7 +17,7 @@ add_subdirectory(extern/glfw)
 
 add_subdirectory(extern/fmt)
 
-set(SOURCE_FILES src/main.cc src/viewport.h src/viewport.cc src/window.h src/window.cc src/utils.h src/bitmap_font.h src/bitmap_font.cc src/renderable.h src/renderable.cpp src/ui_overlay.h src/ui_overlay.cpp src/event_source.h src/vertex.h src/ortho_viewport.h src/ortho_viewport.cpp)
+set(SOURCE_FILES src/main.cc src/viewport.h src/viewport.cc src/window.h src/window.cc src/utils.h src/bitmap_font.h src/bitmap_font.cc src/renderable.h src/renderable.cpp src/ui_overlay.h src/ui_overlay.cpp src/event_source.h src/vertex.h src/ortho_viewport.h src/ortho_viewport.cpp src/perspective_viewport.h src/perspective_viewport.cpp)
 add_executable(GLPlay ${SOURCE_FILES})
 
 target_compile_definitions(GLPlay PUBLIC GLFW_INCLUDE_NONE=1)

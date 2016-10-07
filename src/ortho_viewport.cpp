@@ -1,5 +1,6 @@
-#include <glm/gtc/matrix_transform.hpp>
 #include "ortho_viewport.h"
+
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace GLPlay {
 

@@ -9,8 +9,6 @@ public:
     OrthoViewport(int width, int height);
 
     virtual void Update();
-private:
-
 };
 
 }
