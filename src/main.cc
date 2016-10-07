@@ -8,7 +8,6 @@
 #include "utils.h"
 #include "window.h"
 #include "ui_overlay.h"
-#include "renderable.h"
 
 using namespace gl;
 

@@ -9,10 +9,6 @@
 
 namespace GLPlay {
 
-bool Renderable::bound_dirty_ = false;
-std::map<int, Renderable*> Renderable::renderables_;
-int Renderable::handle_count_ = 0;
-
 EventSource<Renderable::RenderableEvent> Renderable::event_source_;
 
 Renderable::Renderable() {
@@ -48,16 +44,13 @@ Renderable::Renderable() {
     scale_  = glm::vec3(1.0f, 1.0f, 1.0f);
 
     CalculateModelMatrix();
-
-    handle_ = handle_count_++;
-    renderables_.emplace(handle_, this);
 }
 
 Renderable::~Renderable() {
     fmt::print("Destroying VAO: {}\n", gl_objects_[ARRAY_OBJECT]);
     glDeleteVertexArrays(1, gl_objects_);
     glDeleteBuffers(2, gl_buffers_);
-    renderables_.erase(handle_);
+    event_source_.GenerateEvent(VERTEX_EVENT, VertexEventData(-vertices_.size(), -indices_.size()));
 }
 
 void Renderable::Bind() {
@@ -89,14 +82,8 @@ void Renderable::Bind() {
         glEnableVertexAttribArray(4);
 
         glBindVertexArray(0);
-
-        bound_dirty_ = true;
     }
 
-}
-
-int Renderable::Triangles() {
-    return indices_.size()/3;
 }
 
 void Renderable::AddMesh(std::vector<Vertex> & vertices, std::vector<GLuint> & indices) {
