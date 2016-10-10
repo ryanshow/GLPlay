@@ -2,12 +2,15 @@
 
 #include <vector>
 
+#ifndef __EMSCRIPTEN__
 #include <glbinding/gl/gl.h>
+using namespace gl;
+#endif
+
 #include <stb_truetype.h>
 
 #include "renderable.h"
 
-using namespace gl;
 
 namespace GLPlay {
 

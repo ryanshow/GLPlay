@@ -1,6 +1,12 @@
 #include <thread>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+#else
 #include <glbinding/gl/gl.h>
+using namespace gl;
+#endif
+
 #include <GLFW/glfw3.h>
 
 #include "bitmap_font.h"
@@ -9,27 +15,76 @@
 #include "window.h"
 #include "ui_overlay.h"
 
-using namespace gl;
 
 namespace {
     constexpr int MAX_FPS = 30;
     constexpr double MAX_FPS_INTERVAL = (1.0f / MAX_FPS);
+
+    static GLPlay::Window *window;
+    static GLPlay::UiOverlay *ui_overlay;
+    static int info_text_avg_frame_time;
+    static int info_text_min_frame_time;
+    static int info_text_max_frame_time;
+    static int info_text_tris;
+    static double render_time, min_render_time, max_render_time, avg_render_time;
+    static double rolling_render_time[MAX_FPS];
+    static int ticks = 0, tris = 0, rendered_tris = -1;
 }
+
+void MainLoop() {
+    glfwSetTime(0.0f);
+
+    glClearColor(0.2, 0.2, 0.2, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    ui_overlay->Render();
+
+    glfwPollEvents();
+
+    if (ticks != 0 && ticks % MAX_FPS == 0) {
+        min_render_time = -1.0f;
+        max_render_time = -1.0f;
+        avg_render_time = 0.0f;
+        for (int i = 0; i < MAX_FPS; i++) {
+            avg_render_time += rolling_render_time[i];
+            if (min_render_time < 0 || rolling_render_time[i] < min_render_time) min_render_time = rolling_render_time[i];
+            if (max_render_time < 0 || rolling_render_time[i] > max_render_time) max_render_time = rolling_render_time[i];
+        }
+        avg_render_time /= MAX_FPS;
+
+        ui_overlay->UpdateInfoText(info_text_min_frame_time, fmt::format("Frame Min: {:5.2f}ms ({:5.1f} FPS)", min_render_time * 1000, 1.0f / min_render_time));
+        ui_overlay->UpdateInfoText(info_text_avg_frame_time, fmt::format("Frame Avg: {:5.2f}ms ({:5.1f} FPS)", avg_render_time * 1000, 1.0f / avg_render_time));
+        ui_overlay->UpdateInfoText(info_text_max_frame_time, fmt::format("Frame Max: {:5.2f}ms ({:5.1f} FPS)", max_render_time * 1000, 1.0f / max_render_time));
+    }
+
+    if (tris != rendered_tris) {
+        ui_overlay->UpdateInfoText(info_text_tris, fmt::format("Triangles: {}", tris));
+        rendered_tris = tris;
+    }
+
+    glfwSwapBuffers(window->glfw_window());
+
+    render_time = glfwGetTime();
+
+    rolling_render_time[ticks++ % MAX_FPS] = render_time;
+}
+
 int main() {
     GLPlay::ExitCheck(glfwInit(), "GLFW failed to init");
 
-    GLPlay::Window *window = new GLPlay::Window(640, 480, "GLPlay");
+    window = new GLPlay::Window(640, 480, "GLPlay");
 
-    GLPlay::UiOverlay *ui_overlay = new GLPlay::UiOverlay(window);
+    const GLubyte *gl_version = glGetString(GL_VERSION);
+    const GLubyte *glsl_version = glGetString(GL_SHADING_LANGUAGE_VERSION);
 
-    int info_text_avg_frame_time = ui_overlay->AddInfoText("Frame Avg: ");
-    int info_text_min_frame_time = ui_overlay->AddInfoText("Frame Min: ");
-    int info_text_max_frame_time = ui_overlay->AddInfoText("Frame Max: ");
-    int info_text_tris = ui_overlay->AddInfoText("Triangles: ");
+    fmt::print("OpenGL: {}\nGLSL: {}\n", gl_version, glsl_version);
 
-    double render_time, min_render_time, max_render_time, avg_render_time;
-    double rolling_render_time[MAX_FPS];
-    int ticks = 0, tris = 0, rendered_tris = -1;
+    ui_overlay = new GLPlay::UiOverlay(window);
+
+    info_text_avg_frame_time = ui_overlay->AddInfoText("Frame Avg: ");
+    info_text_min_frame_time = ui_overlay->AddInfoText("Frame Min: ");
+    info_text_max_frame_time = ui_overlay->AddInfoText("Frame Max: ");
+    info_text_tris = ui_overlay->AddInfoText("Triangles: ");
 
     auto vertex_callback = [&](const GLPlay::EventData &event_data) {
         const GLPlay::VertexEventData & vertex_event_data = static_cast<const GLPlay::VertexEventData&>(event_data);
@@ -38,42 +93,12 @@ int main() {
 
     GLPlay::Renderable::event_source_.RegisterHandler(GLPlay::Renderable::VERTEX_EVENT, vertex_callback);
 
+#ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop(MainLoop, MAX_FPS, 1);
+#else
     while (!glfwWindowShouldClose(window->glfw_window())) {
 
-        glfwSetTime(0.0f);
-
-        glClearColor(0.2, 0.2, 0.2, 1.0);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        ui_overlay->Render();
-
-        glfwSwapBuffers(window->glfw_window());
-        glfwPollEvents();
-
-        if (ticks != 0 && ticks % MAX_FPS == 0) {
-            min_render_time = -1.0f;
-            max_render_time = -1.0f;
-            avg_render_time = 0.0f;
-            for (int i = 0; i < MAX_FPS; i++) {
-                avg_render_time += rolling_render_time[i];
-                if (min_render_time < 0 || rolling_render_time[i] < min_render_time) min_render_time = rolling_render_time[i];
-                if (max_render_time < 0 || rolling_render_time[i] > max_render_time) max_render_time = rolling_render_time[i];
-            }
-            avg_render_time /= MAX_FPS;
-
-            ui_overlay->UpdateInfoText(info_text_min_frame_time, fmt::format("Frame Min: {:5.2f}ms ({:5.1f} FPS)", min_render_time * 1000, 1.0f / min_render_time));
-            ui_overlay->UpdateInfoText(info_text_avg_frame_time, fmt::format("Frame Avg: {:5.2f}ms ({:5.1f} FPS)", avg_render_time * 1000, 1.0f / avg_render_time));
-            ui_overlay->UpdateInfoText(info_text_max_frame_time, fmt::format("Frame Max: {:5.2f}ms ({:5.1f} FPS)", max_render_time * 1000, 1.0f / max_render_time));
-        }
-
-        if (tris != rendered_tris) {
-            ui_overlay->UpdateInfoText(info_text_tris, fmt::format("Triangles: {}", tris));
-            rendered_tris = tris;
-        }
-
-        render_time = glfwGetTime();
-
-        rolling_render_time[ticks++ % MAX_FPS] = render_time;
+        MainLoop();
 
         if(render_time < MAX_FPS_INTERVAL) {
             std::this_thread::sleep_for(
@@ -83,6 +108,7 @@ int main() {
             );
         }
     }
+#endif
 
     delete ui_overlay;
     delete window;

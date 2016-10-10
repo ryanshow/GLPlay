@@ -1,10 +1,16 @@
 #include "viewport.h"
 
 #include <fmt/format.h>
+
+#ifdef __EMSCRIPTEN__
+#include <GL/gl.h>
+#else
 #include <glbinding/gl/gl.h>
+using namespace gl;
+#endif
+
 #include <glm/gtc/matrix_transform.hpp>
 
-using namespace gl;
 
 namespace GLPlay {
 

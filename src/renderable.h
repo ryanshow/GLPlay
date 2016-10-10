@@ -2,13 +2,19 @@
 
 #include <vector>
 
+#ifdef __EMSCRIPTEN__
+#include <GL/gl.h>
+#include <GL/glext.h>
+#else
 #include <glbinding/gl/gl.h>
+using namespace gl;
+#endif
+
 #include <glm/glm.hpp>
 #include <map>
 #include "vertex.h"
 #include "event_source.h"
 
-using namespace gl;
 
 namespace GLPlay {
 

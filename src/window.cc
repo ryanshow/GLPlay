@@ -1,7 +1,10 @@
 #include "window.h"
 
+#ifndef __EMSCRIPTEN__
 #include <glbinding/gl/gl.h>
 #include <glbinding/Binding.h>
+using namespace gl;
+#endif
 
 #include "utils.h"
 #include "viewport.h"
@@ -19,7 +22,6 @@ void WindowResizeCallback(GLFWwindow *glfw_window, int width, int height) {
 
 namespace GLPlay {
 
-using namespace gl;
 
 Window::Window(int width, int height, const char * title) :
     width_{width},
@@ -46,7 +48,9 @@ Window::Window(int width, int height, const char * title) :
     Window::window_map_.emplace(glfw_window_, this);
 
     glfwMakeContextCurrent(glfw_window_);
+#ifndef __EMSCRIPTEN__
     glbinding::Binding::initialize();
+#endif
     glfwSwapInterval(1);
 
     glEnable(GL_BLEND);

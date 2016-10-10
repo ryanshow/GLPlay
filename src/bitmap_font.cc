@@ -8,8 +8,6 @@
 
 #include "vertex.h"
 
-using namespace gl;
-
 namespace GLPlay {
 
 BitmapFont::BitmapFont(unsigned char *font_buffer, float size) : bitmap_width_{256}, bitmap_height_{256}, start_char_{32}, char_count_{95} {

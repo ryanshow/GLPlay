@@ -20,20 +20,40 @@ Renderable::Renderable() {
     const char * shader_ptr;
     GLuint vertexShader, fragmentShader;
 
-    shader_ptr = reinterpret_cast<const char *>(VERT_SIMPLE);
+    shader_ptr = reinterpret_cast<const char *>(VERT_SIMPLE_330CORE);
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &shader_ptr, nullptr);
     glCompileShader(vertexShader);
+    GLint success;
+    GLchar infoLog[512];
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    if(!success)
+    {
+        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+        fmt::print("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n{}\n", infoLog);
+    };
 
-    shader_ptr = reinterpret_cast<const char *>(FRAG_SIMPLE);
+    shader_ptr = reinterpret_cast<const char *>(FRAG_SIMPLE_330CORE);
     fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &shader_ptr, nullptr);
     glCompileShader(fragmentShader);
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+    if(!success)
+    {
+        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+        fmt::print("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n{}\n", infoLog);
+    };
 
     gl_shader_ = glCreateProgram();
     glAttachShader(gl_shader_, vertexShader);
     glAttachShader(gl_shader_, fragmentShader);
     glLinkProgram(gl_shader_);
+    glGetProgramiv(gl_shader_, GL_LINK_STATUS, &success);
+    if(!success)
+    {
+        glGetProgramInfoLog(gl_shader_, 512, NULL, infoLog);
+        fmt::print("ERROR::SHADER::PROGRAM::LINKING_FAILED\n{}\n", infoLog);
+    }
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);

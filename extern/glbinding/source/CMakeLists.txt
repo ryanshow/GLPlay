@@ -21,8 +21,8 @@ set(IDE_FOLDER "Examples")
 add_subdirectory(examples)
 
 # Examples
-set(IDE_FOLDER "Tools")
-add_subdirectory(tools)
+# set(IDE_FOLDER "Tools")
+# add_subdirectory(tools)
 
 # Tests
 set(IDE_FOLDER "Tests")
