@@ -12,7 +12,7 @@ add_executable(GLPlay ${SOURCE_FILES})
 
 if (EMSCRIPTEN)
   target_compile_definitions(GLPlay PUBLIC GL_GLEXT_PROTOTYPES=1)
-  set(CMAKE_EXE_LINKER_FLAGS "-s USE_GLFW=3")
+  set(CMAKE_EXE_LINKER_FLAGS "-s USE_GLFW=3 -s USE_WEBGL2=1 -s FULL_ES3=1")
   set(CMAKE_EXECUTABLE_SUFFIX ".html")
 
   target_link_libraries(GLPlay PRIVATE

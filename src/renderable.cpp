@@ -17,12 +17,22 @@ Renderable::Renderable() {
 
     fmt::print("Creating VAO: {}\n", gl_objects_[ARRAY_OBJECT]);
 
-    const char * shader_ptr;
+    const char * shader_ptr[2];
     GLuint vertexShader, fragmentShader;
 
-    shader_ptr = reinterpret_cast<const char *>(VERT_SIMPLE_330CORE);
+#ifdef __EMSCRIPTEN__
+    const char *vertex_shader_preamble = \
+        "#version 300 es\n";
+#else
+    const char *vertex_shader_preamble = \
+        "#version 330\n";
+#endif
+
+    shader_ptr[0] = vertex_shader_preamble;
+    shader_ptr[1] = reinterpret_cast<const char*>(VERT_SIMPLE_3XX);
+
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &shader_ptr, nullptr);
+    glShaderSource(vertexShader, 2, shader_ptr, nullptr);
     glCompileShader(vertexShader);
     GLint success;
     GLchar infoLog[512];
@@ -33,9 +43,20 @@ Renderable::Renderable() {
         fmt::print("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n{}\n", infoLog);
     };
 
-    shader_ptr = reinterpret_cast<const char *>(FRAG_SIMPLE_330CORE);
+#ifdef __EMSCRIPTEN__
+    const char *frag_shader_preamble = \
+        "#version 300 es\n" \
+        "precision highp float;\n";
+#else
+    const char *frag_shader_preamble = \
+        "#version 330\n";
+#endif
+
+    shader_ptr[0] = frag_shader_preamble;
+    shader_ptr[1] = reinterpret_cast<const char*>(FRAG_SIMPLE_3XX);
+
     fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &shader_ptr, nullptr);
+    glShaderSource(fragmentShader, 2, shader_ptr, nullptr);
     glCompileShader(fragmentShader);
     glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
     if(!success)
@@ -147,7 +168,8 @@ void Renderable::SetTextureFromBitmap(unsigned char *bitmap, int width, int heig
     glBindTexture(GL_TEXTURE_2D, gl_texture_); {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, bitmap);
+        //glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, bitmap);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, bitmap);
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 }
