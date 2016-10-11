@@ -49,9 +49,9 @@ public:
     static EventSource<RenderableEvent> event_source_;
 
 private:
-    enum gl_buffer_types { ARRAY_BUFFER = 0, ELEMENT_ARRAY_BUFFER = 1 };
+    enum gl_buffer_types { ARRAY_BUFFER = 0, ELEMENT_ARRAY_BUFFER = 1, UNIFORM_BUFFER=2 };
     enum gl_object_types { ARRAY_OBJECT = 0 };
-    GLuint gl_buffers_[2];
+    GLuint gl_buffers_[3];
     GLuint gl_objects_[1];
     GLuint gl_shader_;
     glm::vec3 translation_;

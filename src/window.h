@@ -12,8 +12,8 @@ namespace GLPlay {
 class ResizeEventData : public EventData {
 public:
     ResizeEventData(int width, int height) : width_(width), height_(height) {}
-    int width_;
-    int height_;
+    const int width_;
+    const int height_;
 };
 
 class Window {

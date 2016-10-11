@@ -12,10 +12,8 @@ namespace GLPlay {
 EventSource<Renderable::RenderableEvent> Renderable::event_source_;
 
 Renderable::Renderable() {
-    glGenBuffers(2, gl_buffers_);
+    glGenBuffers(3, gl_buffers_);
     glGenVertexArrays(1, gl_objects_);
-
-    fmt::print("Creating VAO: {}\n", gl_objects_[ARRAY_OBJECT]);
 
     const char * shader_ptr[2];
     GLuint vertexShader, fragmentShader;
@@ -79,6 +77,15 @@ Renderable::Renderable() {
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
+    // FIXME: This should be defined on the shader object (once it exists)
+    GLuint ubi = glGetUniformBlockIndex(gl_shader_, "Matricies");
+    glUniformBlockBinding(gl_shader_, ubi, 0);
+
+    glBindBuffer(GL_UNIFORM_BUFFER, gl_buffers_[UNIFORM_BUFFER]);
+    glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), nullptr, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    glBindBufferRange(GL_UNIFORM_BUFFER, 0, gl_buffers_[UNIFORM_BUFFER], 0, 2 * sizeof(glm::mat4));
+
     rotation_theta_ = 0.0f;
     rotation_vector_ = glm::vec3(1.0f, 0.0f, 0.0f);
     translation_ = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -88,7 +95,6 @@ Renderable::Renderable() {
 }
 
 Renderable::~Renderable() {
-    fmt::print("Destroying VAO: {}\n", gl_objects_[ARRAY_OBJECT]);
     glDeleteVertexArrays(1, gl_objects_);
     glDeleteBuffers(2, gl_buffers_);
     event_source_.GenerateEvent(VERTEX_EVENT, VertexEventData(-vertices_.size(), -indices_.size()));
@@ -146,13 +152,18 @@ void Renderable::ClearMesh() {
 }
 
 void Renderable::Render(glm::mat4 view_matrix, glm::mat4 proj_matrix) {
+    // FIXME: matricies should not be passed in here. Maybe observer on the shader object which monitors matrix changes?
+
+    glBindBuffer(GL_UNIFORM_BUFFER, gl_buffers_[UNIFORM_BUFFER]);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(view_matrix));
+    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(proj_matrix));
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
     glBindVertexArray(gl_objects_[ARRAY_OBJECT]); {
         glUseProgram(gl_shader_);
 
         glUniform1i(glGetUniformLocation(gl_shader_, "tex0"), 0);
-        glUniformMatrix4fv(glGetUniformLocation(gl_shader_, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(view_matrix));
-        glUniformMatrix4fv(glGetUniformLocation(gl_shader_, "projMatrix"), 1, GL_FALSE, glm::value_ptr(proj_matrix));
-        glUniformMatrix4fv(glGetUniformLocation(gl_shader_, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(model_matrix_));
+        glUniformMatrix4fv(glGetUniformLocation(gl_shader_, "model_matrix"), 1, GL_FALSE, glm::value_ptr(model_matrix_));
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, gl_texture_);
@@ -168,7 +179,6 @@ void Renderable::SetTextureFromBitmap(unsigned char *bitmap, int width, int heig
     glBindTexture(GL_TEXTURE_2D, gl_texture_); {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        //glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, bitmap);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, bitmap);
         glBindTexture(GL_TEXTURE_2D, 0);
     }

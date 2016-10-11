@@ -10,7 +10,7 @@ namespace GLPlay {
 int UiOverlay::info_text_counter_ = 0;
 
 UiOverlay::UiOverlay(Window *window) {
-    font_size_ = 24.0f;
+    font_size_ = 15.0f;
 
     viewport_ = new OrthoViewport(window->width(), window->height());
 
