@@ -38,6 +38,8 @@ Window::Window(int width, int height, const char * title) :
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 #endif
 
+    glfwWindowHint(GLFW_SAMPLES, 4);
+
     glfw_window_ = glfwCreateWindow(width, height, title, nullptr, nullptr);
 
     if (!glfw_window_) {
@@ -55,6 +57,8 @@ Window::Window(int width, int height, const char * title) :
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glEnable(GL_MULTISAMPLE);
 
     glfwSetWindowSizeCallback(glfw_window_, WindowResizeCallback);
 }
