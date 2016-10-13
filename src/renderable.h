@@ -14,6 +14,8 @@ using namespace gl;
 #include <map>
 #include "vertex.h"
 #include "event_source.h"
+#include "resource.h"
+#include "shader.h"
 
 
 namespace GLPlay {
@@ -53,7 +55,7 @@ private:
     enum gl_object_types { ARRAY_OBJECT = 0 };
     GLuint gl_buffers_[3];
     GLuint gl_objects_[1];
-    GLuint gl_shader_;
+    Resource<Shader> * shader_;
     glm::vec3 translation_;
     float rotation_theta_;
     glm::vec3 rotation_vector_;

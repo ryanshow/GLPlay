@@ -1,0 +1,19 @@
+{
+  "shaders": {
+    "default": {
+      "resources": [{
+        "type": "file",
+        "name": "fragment",
+        "properties": {
+          "path": "shaders/frag_simple_3xx.glsl"
+        }
+      }, {
+        "type": "file",
+        "name": "vertex",
+        "properties": {
+          "path": "shaders/vert_simple_3xx.glsl"
+        }
+      }]
+    }
+  }
+}

@@ -14,6 +14,8 @@ using namespace gl;
 #include "utils.h"
 #include "window.h"
 #include "ui_overlay.h"
+#include "resource.h"
+#include "shader.h"
 
 
 namespace {

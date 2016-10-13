@@ -4,9 +4,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <fmt/format.h>
 
-#include "resources/shaders.h"
-
-
 namespace GLPlay {
 
 EventSource<Renderable::RenderableEvent> Renderable::event_source_;
@@ -15,71 +12,11 @@ Renderable::Renderable() {
     glGenBuffers(3, gl_buffers_);
     glGenVertexArrays(1, gl_objects_);
 
-    const char * shader_ptr[2];
-    GLuint vertexShader, fragmentShader;
-
-#ifdef __EMSCRIPTEN__
-    const char *vertex_shader_preamble = \
-        "#version 300 es\n";
-#else
-    const char *vertex_shader_preamble = \
-        "#version 330\n";
-#endif
-
-    shader_ptr[0] = vertex_shader_preamble;
-    shader_ptr[1] = reinterpret_cast<const char*>(VERT_SIMPLE_3XX);
-
-    vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 2, shader_ptr, nullptr);
-    glCompileShader(vertexShader);
-    GLint success;
-    GLchar infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if(!success)
-    {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        fmt::print("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n{}\n", infoLog);
-    };
-
-#ifdef __EMSCRIPTEN__
-    const char *frag_shader_preamble = \
-        "#version 300 es\n" \
-        "precision highp float;\n";
-#else
-    const char *frag_shader_preamble = \
-        "#version 330\n";
-#endif
-
-    shader_ptr[0] = frag_shader_preamble;
-    shader_ptr[1] = reinterpret_cast<const char*>(FRAG_SIMPLE_3XX);
-
-    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 2, shader_ptr, nullptr);
-    glCompileShader(fragmentShader);
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if(!success)
-    {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        fmt::print("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n{}\n", infoLog);
-    };
-
-    gl_shader_ = glCreateProgram();
-    glAttachShader(gl_shader_, vertexShader);
-    glAttachShader(gl_shader_, fragmentShader);
-    glLinkProgram(gl_shader_);
-    glGetProgramiv(gl_shader_, GL_LINK_STATUS, &success);
-    if(!success)
-    {
-        glGetProgramInfoLog(gl_shader_, 512, NULL, infoLog);
-        fmt::print("ERROR::SHADER::PROGRAM::LINKING_FAILED\n{}\n", infoLog);
-    }
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    shader_ = new Resource<Shader>("default");
 
     // FIXME: This should be defined on the shader object (once it exists)
-    GLuint ubi = glGetUniformBlockIndex(gl_shader_, "Matricies");
-    glUniformBlockBinding(gl_shader_, ubi, 0);
+    GLuint ubi = glGetUniformBlockIndex(shader_->resource_->gl_shader_, "Matricies");
+    glUniformBlockBinding(shader_->resource_->gl_shader_, ubi, 0);
 
     glBindBuffer(GL_UNIFORM_BUFFER, gl_buffers_[UNIFORM_BUFFER]);
     glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), nullptr, GL_STATIC_DRAW);
@@ -160,10 +97,10 @@ void Renderable::Render(glm::mat4 view_matrix, glm::mat4 proj_matrix) {
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
     glBindVertexArray(gl_objects_[ARRAY_OBJECT]); {
-        glUseProgram(gl_shader_);
+        glUseProgram(shader_->resource_->gl_shader_);
 
-        glUniform1i(glGetUniformLocation(gl_shader_, "tex0"), 0);
-        glUniformMatrix4fv(glGetUniformLocation(gl_shader_, "model_matrix"), 1, GL_FALSE, glm::value_ptr(model_matrix_));
+        glUniform1i(glGetUniformLocation(shader_->resource_->gl_shader_, "tex0"), 0);
+        glUniformMatrix4fv(glGetUniformLocation(shader_->resource_->gl_shader_, "model_matrix"), 1, GL_FALSE, glm::value_ptr(model_matrix_));
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, gl_texture_);

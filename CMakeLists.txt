@@ -27,7 +27,7 @@ set(SOURCE_FILES
     src/entity.h
     src/shader.h
     src/resource.h
-)
+        src/shader.cpp)
 
 add_executable(GLPlay ${SOURCE_FILES})
 
@@ -74,13 +74,14 @@ target_include_directories(GLPlay PUBLIC
     extern/stb
     extern/fmt
     extern/physfs/src
+    extern/json/src
     ${CMAKE_BINARY_DIR}/generated/include
 )
 
 add_custom_command(TARGET GLPlay
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/assets $<TARGET_FILE_DIR:GLPlay>/assets
+    ${CMAKE_SOURCE_DIR}/resources $<TARGET_FILE_DIR:GLPlay>/resources
 )
 
 include(cmake/bin2h.cmake)
