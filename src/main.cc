@@ -8,9 +8,9 @@ using namespace gl;
 #endif
 
 #include <GLFW/glfw3.h>
+#include <physfs.h>
 
 #include "bitmap_font.h"
-#include "renderable.h"
 #include "utils.h"
 #include "window.h"
 #include "ui_overlay.h"
@@ -69,7 +69,10 @@ void MainLoop() {
     rolling_render_time[ticks++ % MAX_FPS] = render_time;
 }
 
-int main() {
+int main(int argc, char ** argv) {
+    PHYSFS_init(argv[0]);
+    PHYSFS_setSaneConfig("ryanshow", "GLPlay", nullptr, 0, 0);
+
     GLPlay::ExitCheck(glfwInit(), "GLFW failed to init");
 
     window = new GLPlay::Window(640, 480, "GLPlay");
@@ -114,5 +117,7 @@ int main() {
     delete window;
 
     glfwTerminate();
+    PHYSFS_deinit();
+
     exit(EXIT_SUCCESS);
 }

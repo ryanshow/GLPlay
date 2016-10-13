@@ -37,7 +37,13 @@ Resource::Resource(const char * name) : name_(name) {
     try {
         resource_ = resource_map_.at(name);
     } catch (const std::out_of_range & e) {
-       // TODO: Load the resource here
+        T resource = T(name);
+        resource.set_attribute(attr_name, attr_data);
+        resource_map_.emplace(
+            std::piecewise_construct,
+            std::forward_as_tuple(name),
+            std::forward_as_tuple(data)
+        );
     }
 }
 
