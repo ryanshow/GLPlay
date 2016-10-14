@@ -27,9 +27,15 @@ set(SOURCE_FILES
     src/entity.h
     src/shader.h
     src/resource.h
-        src/shader.cpp src/font.h src/base_resource.h src/base_resource.cpp)
+    src/shader.cpp
+    src/font.h
+    src/base_resource.h
+    src/base_resource.cpp
+)
 
 add_executable(GLPlay ${SOURCE_FILES})
+
+add_subdirectory(extern/xxd)
 
 add_subdirectory(extern/fmt)
 set_target_properties(fmt PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}" ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}" RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
@@ -100,8 +106,8 @@ add_custom_target(DumpZippedResources
     COMMENT "=== Dumping resources zip to hex ==="
     COMMAND xxd -i "generated/resources.7z" "generated/include/resource_data.h"
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+    DEPENDS xxd ZipResources
 )
 
-add_dependencies(DumpZippedResources ZipResources)
 add_dependencies(GLPlay DumpZippedResources)
 
