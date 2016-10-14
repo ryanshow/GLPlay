@@ -34,6 +34,17 @@ add_executable(GLPlay ${SOURCE_FILES})
 add_subdirectory(extern/fmt)
 set_target_properties(fmt PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}" ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}" RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
+
+set(PHYSFS_ARCHIVE_GRP OFF CACHE BOOL "" FORCE)
+set(PHYSFS_ARCHIVE_WAD OFF CACHE BOOL "" FORCE)
+set(PHYSFS_ARCHIVE_HOG OFF CACHE BOOL "" FORCE)
+set(PHYSFS_ARCHIVE_MVL OFF CACHE BOOL "" FORCE)
+set(PHYSFS_ARCHIVE_QPAK OFF CACHE BOOL "" FORCE)
+set(PHYSFS_ARCHIVE_SLB OFF CACHE BOOL "" FORCE)
+set(PHYSFS_HAVE_CDROM_SUPPORT OFF CACHE BOOL "" FORCE)
+set(PHYSFS_BUILD_STATIC OFF CACHE BOOL "" FORCE)
+set(PHYSFS_BUILD_SHARED ON CACHE BOOL "" FORCE)
+set(PHYSFS_BUILD_TEST OFF CACHE BOOL "" FORCE)
 add_subdirectory(extern/physfs)
 set_target_properties(physfs PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}" ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}" RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
@@ -75,31 +86,22 @@ target_include_directories(GLPlay PUBLIC
     extern/fmt
     extern/physfs/src
     extern/json/src
-    #${CMAKE_BINARY_DIR}/generated/include
+    ${CMAKE_BINARY_DIR}/generated/include
 )
 
-add_custom_command(TARGET GLPlay
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/resources $<TARGET_FILE_DIR:GLPlay>/resources
+add_custom_target(ZipResources
+    COMMENT "=== Zipping resources ==="
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/generated/include
+    COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${CMAKE_BINARY_DIR}/generated/resources.7z" --format=7zip "resources"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
-#include(cmake/bin2h.cmake)
+add_custom_target(DumpZippedResources
+    COMMENT "=== Dumping resources zip to hex ==="
+    COMMAND xxd -i "generated/resources.7z" "generated/include/resource_data.h"
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+)
 
-#file(GLOB resource_types RELATIVE ${CMAKE_SOURCE_DIR}/resources "${CMAKE_SOURCE_DIR}/resources/*")
+add_dependencies(DumpZippedResources ZipResources)
+add_dependencies(GLPlay DumpZippedResources)
 
-#foreach(resource_type ${resource_types})
-#    file(GLOB resource_files RELATIVE ${CMAKE_SOURCE_DIR}/resources/${resource_type} "${CMAKE_SOURCE_DIR}/resources/${resource_type}/*")
-#    file(WRITE ${CMAKE_BINARY_DIR}/generated/include/resources/${resource_type}.h "// This file is generated automatically\n")
-#    foreach(resource_file ${resource_files})
-#        get_filename_component(resource ${resource_file} NAME_WE)
-#        message("RESOURCES: Appending ${resource} to ${resource_type}.h")
-#        bin2h(
-#            SOURCE_FILE ${CMAKE_SOURCE_DIR}/resources/${resource_type}/${resource_file}
-#            HEADER_FILE ${CMAKE_BINARY_DIR}/generated/include/resources/${resource_type}.h
-#            VARIABLE_NAME ${resource}
-#            APPEND
-#            NULL_TERMINATE
-#        )
-#    endforeach()
-#endforeach()

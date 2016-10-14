@@ -16,6 +16,7 @@ using namespace gl;
 #include "ui_overlay.h"
 #include "resource.h"
 #include "shader.h"
+#include "resource_data.h"
 
 
 namespace {
@@ -73,7 +74,9 @@ void MainLoop() {
 
 int main(int argc, char ** argv) {
     PHYSFS_init(argv[0]);
-    PHYSFS_setSaneConfig("ryanshow", "GLPlay", nullptr, 0, 0);
+    //PHYSFS_setSaneConfig("ryanshow", "GLPlay", nullptr, 0, 0);
+
+    PHYSFS_mountMemory(generated_resources_7z, generated_resources_7z_len, nullptr, nullptr, nullptr, 0);
 
     GLPlay::ExitCheck(glfwInit(), "GLFW failed to init");
 
