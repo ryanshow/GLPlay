@@ -4,13 +4,6 @@
 
 namespace GLPlay {
 
-Shader::Shader(Shader && other) : gl_shader_{other.gl_shader_}, resource_properties_{std::move(other.resource_properties_)} {
-}
-
-void Shader::SetProperty(std::string key, const unsigned char * value) {
-    resource_properties_[key] = value;
-}
-
 void Shader::Compile() {
 
     fmt::print("Compiling Shader...\n");
@@ -27,7 +20,7 @@ void Shader::Compile() {
 #endif
 
     shader_ptr[0] = vertex_shader_preamble;
-    shader_ptr[1] = reinterpret_cast<const char*>(resource_properties_["vertex"]);
+    shader_ptr[1] = reinterpret_cast<const char*>(GetProperty("vertex"));
 
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 2, shader_ptr, nullptr);
@@ -51,7 +44,7 @@ void Shader::Compile() {
 #endif
 
     shader_ptr[0] = frag_shader_preamble;
-    shader_ptr[1] = reinterpret_cast<const char*>(resource_properties_["fragment"]);
+    shader_ptr[1] = reinterpret_cast<const char*>(GetProperty("fragment"));
 
     fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 2, shader_ptr, nullptr);

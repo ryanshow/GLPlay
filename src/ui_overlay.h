@@ -20,8 +20,7 @@ private:
     void Update(int handler);
 
     OrthoViewport *viewport_;
-    float font_size_;
-    Resource<BitmapFont> * bitmap_font_;
+    BitmapFont * bitmap_font_;
     static int info_text_counter_;
 
     struct TextRenderable {

@@ -10,24 +10,23 @@
 
 namespace GLPlay {
 
-BitmapFont::BitmapFont() : bitmap_width_{256}, bitmap_height_{256}, start_char_{32}, char_count_{95} {
+BitmapFont::BitmapFont(std::string name, float size) : bitmap_width_{256}, bitmap_height_{256}, start_char_{32}, char_count_{95}, size_{size} {
     fmt::print("+++ Constructing Bitmap +++\n");
+    font_ = new Resource<Font>(name);
     char_data_ = new stbtt_packedchar[char_count_];
     bitmap_ = new unsigned char[bitmap_width_ * bitmap_height_];
-}
 
-BitmapFont::BitmapFont(BitmapFont && other) : bitmap_width_{other.bitmap_width_}, bitmap_height_{other.bitmap_height_}, start_char_{other.start_char_}, char_count_{other.char_count_}, bitmap_{other.bitmap_}, char_data_{other.char_data_} {
-    other.bitmap_ = nullptr;
-    other.char_data_ = nullptr;
-}
-
-void BitmapFont::Compile() {
     fmt::print("Compiling bitmap.\n");
     stbtt_pack_context pack_cxt;
     stbtt_PackBegin(&pack_cxt, bitmap_, bitmap_width_, bitmap_height_, 0, 1, nullptr);
     stbtt_PackSetOversampling(&pack_cxt, 1, 1);
-    stbtt_PackFontRange(&pack_cxt, const_cast<unsigned char *>(resource_properties_["font"]), 0, 15.0, start_char_, char_count_, char_data_);
+    stbtt_PackFontRange(&pack_cxt, const_cast<unsigned char *>((**font_).GetProperty("font")), 0, size_, start_char_, char_count_, char_data_);
     stbtt_PackEnd(&pack_cxt);
+}
+
+BitmapFont::BitmapFont(BitmapFont && other) : size_{other.size_}, bitmap_width_{other.bitmap_width_}, bitmap_height_{other.bitmap_height_}, start_char_{other.start_char_}, char_count_{other.char_count_}, bitmap_{other.bitmap_}, char_data_{other.char_data_} {
+    other.bitmap_ = nullptr;
+    other.char_data_ = nullptr;
 }
 
 BitmapFont::~BitmapFont() {
@@ -74,8 +73,8 @@ int BitmapFont::bitmap_height() const {
     return bitmap_height_;
 }
 
-void BitmapFont::SetProperty(std::string key, const unsigned char * value) {
-    resource_properties_[key] = value;
+int BitmapFont::size() const {
+    return size_;
 }
 
 }

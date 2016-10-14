@@ -9,11 +9,10 @@ int UiOverlay::info_text_counter_ = 0;
 
 UiOverlay::UiOverlay(Window *window) {
     fmt::printf("+++ Constructing UiOverlay +++\n");
-    font_size_ = 15.0f;
 
     viewport_ = new OrthoViewport(window->width(), window->height());
 
-    bitmap_font_ = new Resource<BitmapFont>("default");
+    bitmap_font_ = new BitmapFont("default", 24.0f);
 
     int info_text_win_size = AddInfoText("Hello");
 
@@ -48,8 +47,8 @@ void UiOverlay::Update(int handle) {
     x = 0.0f;
     y = 0.0f;
     text_renderable.renderable_->ClearMesh();
-    bitmap_font_->resource_->GenerateTextMesh(text_renderable.info_text_, *text_renderable.renderable_, x, y);
-    text_renderable.renderable_->SetTranslation(glm::vec3(0.0f, viewport_->height()-(font_size_*(handle+1)), 0.0f));
+    bitmap_font_->GenerateTextMesh(text_renderable.info_text_, *text_renderable.renderable_, x, y);
+    text_renderable.renderable_->SetTranslation(glm::vec3(0.0f, viewport_->height()-(bitmap_font_->size()*(handle+1)), 0.0f));
     text_renderable.renderable_->Bind();
     text_renderable.dirty_ = false;
 }
@@ -72,7 +71,7 @@ int UiOverlay::AddInfoText(std::string text) {
     text_renderable_map_[handler].info_text_ = text;
     text_renderable_map_[handler].dirty_ = true;
     text_renderable_map_[handler].renderable_ = new Renderable();
-    text_renderable_map_[handler].renderable_->SetTextureFromBitmap(bitmap_font_->resource_->bitmap(), bitmap_font_->resource_->bitmap_width(), bitmap_font_->resource_->bitmap_height());
+    text_renderable_map_[handler].renderable_->SetTextureFromBitmap(bitmap_font_->bitmap(), bitmap_font_->bitmap_width(), bitmap_font_->bitmap_height());
 
     return handler;
 }

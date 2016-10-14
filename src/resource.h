@@ -14,23 +14,25 @@ template<typename T>
 class Resource {
 public:
     Resource(const Resource<T> & resource);
-    Resource(const char * name);
+    Resource(std::string name);
     ~Resource();
+
+    const T & operator*();
 
     const T * resource_;
 
 private:
-    const char * name_;
+    std::string name_;
 
-    static std::map<const char *, int> ref_count_map_;
-    static std::map<const char *, T> resource_map_;
+    static std::map<std::string, int> ref_count_map_;
+    static std::map<std::string, T> resource_map_;
 };
 
 template <typename T>
-std::map<const char *, int> Resource<T>::ref_count_map_;
+std::map<std::string, int> Resource<T>::ref_count_map_;
 
 template <typename T>
-std::map<const char *, T> Resource<T>::resource_map_;
+std::map<std::string, T> Resource<T>::resource_map_;
 
 template<typename T>
 Resource<T>::Resource(const Resource<T> & resource) : name_(resource.name_), resource_(resource.resource_) {
@@ -38,7 +40,7 @@ Resource<T>::Resource(const Resource<T> & resource) : name_(resource.name_), res
 }
 
 template<typename T>
-Resource<T>::Resource(const char * name) : name_(name) {
+Resource<T>::Resource(std::string name) : name_(name) {
     fmt::print("Creating Resource...\n");
     try {
         ref_count_map_.at(name) += 1;
@@ -90,6 +92,11 @@ Resource<T>::Resource(const char * name) : name_(name) {
         fmt::print("Emplaced resource!\n");
         resource_ = &resource_map_.at(name);
     }
+}
+
+template<typename T>
+const T & Resource<T>::operator*() {
+    return *resource_;
 }
 
 template<typename T>

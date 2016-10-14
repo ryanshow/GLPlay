@@ -27,7 +27,7 @@ set(SOURCE_FILES
     src/entity.h
     src/shader.h
     src/resource.h
-        src/shader.cpp)
+        src/shader.cpp src/font.h src/base_resource.h src/base_resource.cpp)
 
 add_executable(GLPlay ${SOURCE_FILES})
 

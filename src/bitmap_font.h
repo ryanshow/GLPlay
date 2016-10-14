@@ -10,23 +10,22 @@ using namespace gl;
 #include <stb_truetype.h>
 
 #include "renderable.h"
+#include "base_resource.h"
+#include "font.h"
 
 
 namespace GLPlay {
 
-class BitmapFont {
+class BitmapFont : public BaseResource {
 public:
-    BitmapFont();
+    BitmapFont(std::string name, float size);
     BitmapFont(BitmapFont&& other);
     ~BitmapFont();
-
-    constexpr static const char *resource_namespace = "fonts";
-    void SetProperty(std::string name, const unsigned char * value);
-    void Compile();
 
     unsigned char * bitmap() const;
     int bitmap_width() const;
     int bitmap_height() const;
+    int size() const;
     stbtt_packedchar * char_data() const;
 
     void GenerateTextMesh(std::string text, Renderable & renderable, float &offset_x, float &offset_y) const;
@@ -38,7 +37,8 @@ private:
     int bitmap_height_;
     int start_char_;
     int char_count_;
-    std::map<std::string, const unsigned char *> resource_properties_;
+    float size_;
+    Resource<Font> * font_;
 };
 
 }

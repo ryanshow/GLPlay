@@ -9,22 +9,20 @@ using namespace gl;
 #endif
 
 #include <map>
+#include "base_resource.h"
 
 namespace GLPlay {
 
-class Shader {
+class Shader : public BaseResource {
 public:
+    Shader() {};
+    Shader(Shader && other) : BaseResource(std::move(other)), gl_shader_{other.gl_shader_} {};
+
     constexpr static const char *resource_namespace = "shaders";
 
-    Shader() {};
-    Shader(Shader && other);
-
-    void SetProperty(std::string name, const unsigned char * value);
     void Compile();
 
     GLuint gl_shader_;
-private:
-    std::map<std::string, const unsigned char *> resource_properties_;
 };
 
 }
