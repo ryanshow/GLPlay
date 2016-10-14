@@ -4,6 +4,9 @@
 
 namespace GLPlay {
 
+Shader::Shader(Shader && other) : gl_shader_{other.gl_shader_}, resource_properties_{std::move(other.resource_properties_)} {
+}
+
 void Shader::SetProperty(std::string key, const unsigned char * value) {
     resource_properties_[key] = value;
 }

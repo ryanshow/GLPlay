@@ -15,5 +15,16 @@
         }
       }]
     }
+  },
+  "fonts": {
+    "default": {
+      "resources": [{
+        "type": "file",
+        "name": "font",
+        "properties": {
+          "path": "fonts/droid_sans_mono.ttf"
+        }
+      }]
+    }
   }
 }

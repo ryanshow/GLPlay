@@ -16,15 +16,20 @@ namespace GLPlay {
 
 class BitmapFont {
 public:
-    BitmapFont(unsigned char *font_data, float size);
+    BitmapFont();
+    BitmapFont(BitmapFont&& other);
     ~BitmapFont();
 
-    unsigned char *bitmap();
-    int bitmap_width();
-    int bitmap_height();
-    stbtt_packedchar *char_data();
+    constexpr static const char *resource_namespace = "fonts";
+    void SetProperty(std::string name, const unsigned char * value);
+    void Compile();
 
-    void GenerateTextMesh(std::string text, Renderable & renderable, float &offset_x, float &offset_y);
+    unsigned char * bitmap() const;
+    int bitmap_width() const;
+    int bitmap_height() const;
+    stbtt_packedchar * char_data() const;
+
+    void GenerateTextMesh(std::string text, Renderable & renderable, float &offset_x, float &offset_y) const;
 
 private:
     stbtt_packedchar *char_data_;
@@ -33,6 +38,7 @@ private:
     int bitmap_height_;
     int start_char_;
     int char_count_;
+    std::map<std::string, const unsigned char *> resource_properties_;
 };
 
 }

@@ -10,27 +10,37 @@
 
 namespace GLPlay {
 
-BitmapFont::BitmapFont(unsigned char *font_buffer, float size) : bitmap_width_{256}, bitmap_height_{256}, start_char_{32}, char_count_{95} {
-    stbtt_pack_context pack_cxt;
+BitmapFont::BitmapFont() : bitmap_width_{256}, bitmap_height_{256}, start_char_{32}, char_count_{95} {
+    fmt::print("+++ Constructing Bitmap +++\n");
     char_data_ = new stbtt_packedchar[char_count_];
     bitmap_ = new unsigned char[bitmap_width_ * bitmap_height_];
+}
 
+BitmapFont::BitmapFont(BitmapFont && other) : bitmap_width_{other.bitmap_width_}, bitmap_height_{other.bitmap_height_}, start_char_{other.start_char_}, char_count_{other.char_count_}, bitmap_{other.bitmap_}, char_data_{other.char_data_} {
+    other.bitmap_ = nullptr;
+    other.char_data_ = nullptr;
+}
+
+void BitmapFont::Compile() {
+    fmt::print("Compiling bitmap.\n");
+    stbtt_pack_context pack_cxt;
     stbtt_PackBegin(&pack_cxt, bitmap_, bitmap_width_, bitmap_height_, 0, 1, nullptr);
     stbtt_PackSetOversampling(&pack_cxt, 1, 1);
-    stbtt_PackFontRange(&pack_cxt, font_buffer, 0, size, start_char_, char_count_, char_data_);
+    stbtt_PackFontRange(&pack_cxt, const_cast<unsigned char *>(resource_properties_["font"]), 0, 15.0, start_char_, char_count_, char_data_);
     stbtt_PackEnd(&pack_cxt);
 }
 
 BitmapFont::~BitmapFont() {
+    fmt::print("--- Destroying bitmap ---\n");
     delete[] bitmap_;
     delete[] char_data_;
 }
 
-stbtt_packedchar *BitmapFont::char_data() {
+stbtt_packedchar * BitmapFont::char_data() const {
     return char_data_;
 }
 
-void BitmapFont::GenerateTextMesh(std::string text, Renderable & renderable, float &offset_x, float &offset_y) {
+void BitmapFont::GenerateTextMesh(std::string text, Renderable & renderable, float &offset_x, float &offset_y) const {
     stbtt_aligned_quad q;
     for (auto c : text) {
         stbtt_GetPackedQuad(char_data(), bitmap_width_, bitmap_height_, c-start_char_, &offset_x, &offset_y, &q, 1);
@@ -51,17 +61,21 @@ void BitmapFont::GenerateTextMesh(std::string text, Renderable & renderable, flo
     }
 }
 
-unsigned char *BitmapFont::bitmap() {
+unsigned char *BitmapFont::bitmap() const {
     return bitmap_;
 }
 
-int BitmapFont::bitmap_width() {
+int BitmapFont::bitmap_width() const {
     return bitmap_width_;
 
 }
 
-int BitmapFont::bitmap_height() {
+int BitmapFont::bitmap_height() const {
     return bitmap_height_;
+}
+
+void BitmapFont::SetProperty(std::string key, const unsigned char * value) {
+    resource_properties_[key] = value;
 }
 
 }

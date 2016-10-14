@@ -75,7 +75,7 @@ target_include_directories(GLPlay PUBLIC
     extern/fmt
     extern/physfs/src
     extern/json/src
-    ${CMAKE_BINARY_DIR}/generated/include
+    #${CMAKE_BINARY_DIR}/generated/include
 )
 
 add_custom_command(TARGET GLPlay
@@ -84,22 +84,22 @@ add_custom_command(TARGET GLPlay
     ${CMAKE_SOURCE_DIR}/resources $<TARGET_FILE_DIR:GLPlay>/resources
 )
 
-include(cmake/bin2h.cmake)
+#include(cmake/bin2h.cmake)
 
-file(GLOB resource_types RELATIVE ${CMAKE_SOURCE_DIR}/resources "${CMAKE_SOURCE_DIR}/resources/*")
+#file(GLOB resource_types RELATIVE ${CMAKE_SOURCE_DIR}/resources "${CMAKE_SOURCE_DIR}/resources/*")
 
-foreach(resource_type ${resource_types})
-    file(GLOB resource_files RELATIVE ${CMAKE_SOURCE_DIR}/resources/${resource_type} "${CMAKE_SOURCE_DIR}/resources/${resource_type}/*")
-    file(WRITE ${CMAKE_BINARY_DIR}/generated/include/resources/${resource_type}.h "// This file is generated automatically\n")
-    foreach(resource_file ${resource_files})
-        get_filename_component(resource ${resource_file} NAME_WE)
-        message("RESOURCES: Appending ${resource} to ${resource_type}.h")
-        bin2h(
-            SOURCE_FILE ${CMAKE_SOURCE_DIR}/resources/${resource_type}/${resource_file}
-            HEADER_FILE ${CMAKE_BINARY_DIR}/generated/include/resources/${resource_type}.h
-            VARIABLE_NAME ${resource}
-            APPEND
-            NULL_TERMINATE
-        )
-    endforeach()
-endforeach()
+#foreach(resource_type ${resource_types})
+#    file(GLOB resource_files RELATIVE ${CMAKE_SOURCE_DIR}/resources/${resource_type} "${CMAKE_SOURCE_DIR}/resources/${resource_type}/*")
+#    file(WRITE ${CMAKE_BINARY_DIR}/generated/include/resources/${resource_type}.h "// This file is generated automatically\n")
+#    foreach(resource_file ${resource_files})
+#        get_filename_component(resource ${resource_file} NAME_WE)
+#        message("RESOURCES: Appending ${resource} to ${resource_type}.h")
+#        bin2h(
+#            SOURCE_FILE ${CMAKE_SOURCE_DIR}/resources/${resource_type}/${resource_file}
+#            HEADER_FILE ${CMAKE_BINARY_DIR}/generated/include/resources/${resource_type}.h
+#            VARIABLE_NAME ${resource}
+#            APPEND
+#            NULL_TERMINATE
+#        )
+#    endforeach()
+#endforeach()

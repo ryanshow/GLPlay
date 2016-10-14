@@ -16,6 +16,9 @@ class Shader {
 public:
     constexpr static const char *resource_namespace = "shaders";
 
+    Shader() {};
+    Shader(Shader && other);
+
     void SetProperty(std::string name, const unsigned char * value);
     void Compile();
 
