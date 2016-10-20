@@ -72,13 +72,9 @@ Resource<T>::Resource(std::string name) : name_(name) {
             resource_name = "default";
         }
 
-        fmt::print("Resource: '{}', '{}'\n", resource_prefix, name);
-
         if (manifest[resource_prefix][name]["type"] == "file") {
             std::string resource_location = manifest[resource_prefix][name]["location"];
             std::string filename = "resources/" + resource_location;
-
-            fmt::print("Loading {}\n", filename);
 
             PHYSFS_File *resource_file = PHYSFS_openRead(filename.c_str());
             int resource_length = PHYSFS_fileLength(resource_file);
