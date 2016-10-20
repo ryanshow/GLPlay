@@ -3,6 +3,22 @@
 namespace GLPlay {
 
 void ShaderResource::SetData(std::vector<unsigned char> & data) {
+    std::string shader_str = reinterpret_cast<char *>(data.data());
+
+    size_t shader_pos = shader_str.find("// === ", 0)+7;
+
+    while (shader_pos != std::string::npos) {
+        size_t next_shader_pos = shader_str.find("// === ", shader_pos);
+        std::string shader_name = shader_str.substr(shader_pos, shader_str.find(" ===", shader_pos)-shader_pos);
+        std::string shader_body = shader_str.substr(shader_str.find("\n", shader_pos)+1, next_shader_pos-shader_str.find("\n", shader_pos)+1);
+        fmt::print("shader name: {}\n", shader_name);
+        fmt::print("shader body: {}\n", shader_body);
+        if (next_shader_pos != std::string::npos) {
+            next_shader_pos += 7;
+        }
+        shader_pos = next_shader_pos;
+    }
+
     fmt::print("ShaderResource::SetData\n");
     source_map_["vertex.gl3"] = "layout (location = 0) in vec3 inPos;\n"
         "layout (location = 1) in vec3 inNor;\n"
