@@ -12,11 +12,11 @@ Renderable::Renderable() {
     glGenBuffers(3, gl_buffers_);
     glGenVertexArrays(1, gl_objects_);
 
-    shader_ = new Resource<Shader>("default");
+    shader_ = new Shader("default");
 
     // FIXME: This should be defined on the shader object (once it exists)
-    GLuint ubi = glGetUniformBlockIndex((**shader_).gl_shader_, "Matricies");
-    glUniformBlockBinding((**shader_).gl_shader_, ubi, 0);
+    GLuint ubi = glGetUniformBlockIndex((*shader_).gl_shader_, "Matricies");
+    glUniformBlockBinding((*shader_).gl_shader_, ubi, 0);
 
     glBindBuffer(GL_UNIFORM_BUFFER, gl_buffers_[UNIFORM_BUFFER]);
     glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), nullptr, GL_STATIC_DRAW);
@@ -97,10 +97,10 @@ void Renderable::Render(glm::mat4 view_matrix, glm::mat4 proj_matrix) {
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
     glBindVertexArray(gl_objects_[ARRAY_OBJECT]); {
-        glUseProgram((**shader_).gl_shader_);
+        glUseProgram((*shader_).gl_shader_);
 
-        glUniform1i(glGetUniformLocation((**shader_).gl_shader_, "tex0"), 0);
-        glUniformMatrix4fv(glGetUniformLocation((**shader_).gl_shader_, "model_matrix"), 1, GL_FALSE, glm::value_ptr(model_matrix_));
+        glUniform1i(glGetUniformLocation((*shader_).gl_shader_, "tex0"), 0);
+        glUniformMatrix4fv(glGetUniformLocation((*shader_).gl_shader_, "model_matrix"), 1, GL_FALSE, glm::value_ptr(model_matrix_));
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, gl_texture_);

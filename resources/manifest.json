@@ -1,30 +1,14 @@
 {
   "shaders": {
     "default": {
-      "resources": [{
-        "type": "file",
-        "name": "fragment",
-        "properties": {
-          "path": "shaders/frag_simple_3xx.glsl"
-        }
-      }, {
-        "type": "file",
-        "name": "vertex",
-        "properties": {
-          "path": "shaders/vert_simple_3xx.glsl"
-        }
-      }]
+      "type": "file",
+      "location": "shaders/simple.glsl"
     }
   },
   "fonts": {
     "default": {
-      "resources": [{
-        "type": "file",
-        "name": "font",
-        "properties": {
-          "path": "fonts/droid_sans_mono.ttf"
-        }
-      }]
+      "type": "file",
+      "location": "fonts/droid_sans_mono.ttf"
     }
   }
 }

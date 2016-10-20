@@ -10,13 +10,12 @@ using namespace gl;
 #include <stb_truetype.h>
 
 #include "renderable.h"
-#include "base_resource.h"
-#include "font.h"
+#include "raw_resource.h"
 
 
 namespace GLPlay {
 
-class BitmapFont : public BaseResource {
+class BitmapFont {
 public:
     BitmapFont(std::string name, float size);
     BitmapFont(BitmapFont&& other);
@@ -38,7 +37,7 @@ private:
     int start_char_;
     int char_count_;
     float size_;
-    Resource<Font> * font_;
+    Resource<RawResource> * font_resource_;
 };
 
 }

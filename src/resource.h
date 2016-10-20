@@ -4,7 +4,7 @@
 #include <fmt/format.h>
 #include <json.hpp>
 #include <physfs.h>
-#include "shader.h"
+//#include "shader.h"
 
 using json = nlohmann::json;
 
@@ -17,9 +17,9 @@ public:
     Resource(std::string name);
     ~Resource();
 
-    const T & operator*();
+    T & operator*();
 
-    const T * resource_;
+    T * resource_;
 
 private:
     std::string name_;
@@ -60,33 +60,35 @@ Resource<T>::Resource(std::string name) : name_(name) {
         manifest_buffer[manifest_length] = '\0';
         PHYSFS_close(manifest_file);
 
+        std::string resource_prefix = name.substr(0, name.find("/"));
+        name.erase(0, name.find("/")+1);
+
         T resource = T();
         auto manifest = json::parse(manifest_buffer);
         std::string resource_name(name);
         try {
-            manifest[T::resource_namespace].at(name);
+            manifest[resource_prefix].at(name);
         } catch (std::out_of_range) {
             resource_name = "default";
         }
 
-        for (auto & manifest_resource : manifest[T::resource_namespace][resource_name]["resources"]) {
-            std::string manifest_resource_name = manifest_resource["name"];
-            std::string manifest_resource_type = manifest_resource["type"];
-            if (manifest_resource_type == "file") {
-                std::string filename = "resources/";
-                filename += manifest_resource["properties"]["path"];
-                PHYSFS_File *resource_file = PHYSFS_openRead(filename.c_str());
-                int resource_length = PHYSFS_fileLength(resource_file);
-                unsigned char * resource_buffer = new unsigned char[resource_length+1];
-                PHYSFS_readBytes(resource_file, resource_buffer, resource_length);
-                resource_buffer[resource_length] = '\0';
-                PHYSFS_close(resource_file);
+        fmt::print("Resource: '{}', '{}'\n", resource_prefix, name);
 
-                resource.SetProperty(manifest_resource_name, resource_buffer);
-            }
+        if (manifest[resource_prefix][name]["type"] == "file") {
+            std::string resource_location = manifest[resource_prefix][name]["location"];
+            std::string filename = "resources/" + resource_location;
+
+            fmt::print("Loading {}\n", filename);
+
+            PHYSFS_File *resource_file = PHYSFS_openRead(filename.c_str());
+            int resource_length = PHYSFS_fileLength(resource_file);
+            std::vector<unsigned char> resource_buffer(resource_length);
+            PHYSFS_readBytes(resource_file, &resource_buffer[0], resource_length);
+            PHYSFS_close(resource_file);
+
+            resource.SetData(resource_buffer);
+
         }
-
-        resource.Compile();
 
         resource_map_.emplace(name, std::move(resource));
         fmt::print("Emplaced resource!\n");
@@ -95,8 +97,8 @@ Resource<T>::Resource(std::string name) : name_(name) {
 }
 
 template<typename T>
-const T & Resource<T>::operator*() {
-    return *resource_;
+T & Resource<T>::operator*() {
+    return * resource_;
 }
 
 template<typename T>

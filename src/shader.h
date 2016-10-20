@@ -8,21 +8,20 @@
 using namespace gl;
 #endif
 
+#include "resource.h"
+#include "shader_resource.h"
+
 #include <map>
-#include "base_resource.h"
 
 namespace GLPlay {
 
-class Shader : public BaseResource {
+class Shader {
 public:
-    Shader() {};
-    Shader(Shader && other) : BaseResource(std::move(other)), gl_shader_{other.gl_shader_} {};
-
-    constexpr static const char *resource_namespace = "shaders";
-
-    void Compile();
+    Shader(std::string name);
 
     GLuint gl_shader_;
+private:
+    Resource<ShaderResource> * shader_resource_;
 };
 
 }
