@@ -7,6 +7,12 @@ void ShaderResource::SetData(std::vector<unsigned char> & data) {
 
     size_t shader_pos = shader_str.find("// === ", 0);
 
+    int line_count = 1;
+
+    for(size_t i=shader_str.find("\n", 0); i < shader_pos; i = shader_str.find("\n", i+1)) {
+        line_count++;
+    }
+
     while (shader_pos != std::string::npos) {
         size_t shader_name_pos = shader_pos + 7;
         size_t next_shader_pos = shader_str.find("// === ", shader_name_pos);
@@ -16,6 +22,12 @@ void ShaderResource::SetData(std::vector<unsigned char> & data) {
 
         std::string shader_name = shader_str.substr(shader_name_pos, shader_str.find(" ===", shader_name_pos)-shader_name_pos);
         std::string shader_body = shader_str.substr(shader_pos, (next_shader_pos)-shader_pos);
+
+        shader_body.insert(0, fmt::format("#line {}\n", line_count));
+
+        for(size_t i=shader_str.find("\n", shader_pos); i < next_shader_pos; i = shader_str.find("\n", i+1)) {
+            line_count++;
+        }
 
         source_map_[shader_name] = shader_body;
 
@@ -64,7 +76,7 @@ GLuint ShaderResource::GetShader(GLenum shader_type) {
         glGetShaderiv(shader_id, GL_COMPILE_STATUS, &success);
         if(!success) {
             glGetShaderInfoLog(shader_id, 512, NULL, infoLog);
-            fmt::print("ERROR::SHADER::XXX::COMPILATION_FAILED\n{}\n", infoLog);
+            fmt::print("ERROR: Shader Compilation Failed\n{}\n", infoLog);
         }
         return shader_id;
     }
