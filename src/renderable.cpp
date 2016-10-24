@@ -9,14 +9,11 @@ namespace GLPlay {
 EventSource<Renderable::RenderableEvent> Renderable::event_source_;
 
 Renderable::Renderable() {
+    gl_texture_ = 0;
     glGenBuffers(3, gl_buffers_);
     glGenVertexArrays(1, gl_objects_);
 
     shader_ = new Shader("default");
-
-    // FIXME: This should be defined on the shader object (once it exists)
-    GLuint ubi = glGetUniformBlockIndex((*shader_).gl_shader_, "Matricies");
-    glUniformBlockBinding((*shader_).gl_shader_, ubi, 0);
 
     glBindBuffer(GL_UNIFORM_BUFFER, gl_buffers_[UNIFORM_BUFFER]);
     glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), nullptr, GL_STATIC_DRAW);
@@ -71,7 +68,7 @@ void Renderable::Bind() {
 }
 
 void Renderable::AddMesh(std::vector<Vertex> & vertices, std::vector<GLuint> & indices) {
-    int i = vertices_.size();
+    size_t i = vertices_.size();
     for (auto & vertex : vertices) {
         vertices_.emplace_back(vertex);
     }
@@ -102,10 +99,16 @@ void Renderable::Render(glm::mat4 view_matrix, glm::mat4 proj_matrix) {
         glUniform1i(glGetUniformLocation((*shader_).gl_shader_, "tex0"), 0);
         glUniformMatrix4fv(glGetUniformLocation((*shader_).gl_shader_, "model_matrix"), 1, GL_FALSE, glm::value_ptr(model_matrix_));
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, gl_texture_);
+        if (gl_texture_) {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, gl_texture_);
+        }
 
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices_.size()), GL_UNSIGNED_INT, 0);
+
+        if (gl_texture_) {
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
 
         glBindVertexArray(0);
     }

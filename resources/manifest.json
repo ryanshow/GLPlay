@@ -10,5 +10,11 @@
       "type": "file",
       "location": "fonts/droid_sans_mono.ttf"
     }
+  },
+  "meshes": {
+    "cube": {
+      "type": "file",
+      "location": "meshes/cube.json"
+    }
   }
 }

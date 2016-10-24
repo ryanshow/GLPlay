@@ -17,6 +17,9 @@ Shader::Shader(std::string name) {
         glGetProgramInfoLog(gl_shader_, 512, NULL, infoLog);
         fmt::print("ERROR::SHADER::PROGRAM::LINKING_FAILED\n{}\n", infoLog);
     }
+
+    GLuint ubi = glGetUniformBlockIndex(gl_shader_, "Matricies");
+    glUniformBlockBinding(gl_shader_, ubi, 0);
 }
 
 }

@@ -17,6 +17,9 @@ using namespace gl;
 #include "resource.h"
 #include "shader.h"
 #include "resource_data.h"
+#include "mesh_resource.h"
+
+#include <glm/gtc/matrix_transform.hpp>
 
 
 namespace {
@@ -32,6 +35,17 @@ namespace {
     static double render_time, min_render_time, max_render_time, avg_render_time;
     static double rolling_render_time[MAX_FPS];
     static int ticks = 0, tris = 0, rendered_tris = -1;
+
+    static GLPlay::Resource<GLPlay::MeshResource> * mesh_resource;
+
+    static glm::mat4 view_matrix = glm::mat4(1.0f);
+
+    static glm::mat4 proj_matrix = glm::perspective(
+        45.0f,
+        static_cast<float>(640)/static_cast<float>(480),
+        0.1f, 1000.0f
+    );
+
 }
 
 void MainLoop() {
@@ -41,6 +55,8 @@ void MainLoop() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     ui_overlay->Render();
+
+    (**mesh_resource).renderable_->Render(view_matrix, proj_matrix);
 
     glfwPollEvents();
 
@@ -89,10 +105,10 @@ int main(int argc, char ** argv) {
 
     ui_overlay = new GLPlay::UiOverlay(window);
 
-    info_text_avg_frame_time = ui_overlay->AddInfoText("Frame Avg: ");
-    info_text_min_frame_time = ui_overlay->AddInfoText("Frame Min: ");
-    info_text_max_frame_time = ui_overlay->AddInfoText("Frame Max: ");
-    info_text_tris = ui_overlay->AddInfoText("Triangles: ");
+    view_matrix *= glm::lookAt(
+            glm::vec3(0.0f, 0.0f, 5.0f),
+            glm::vec3(0.0f),
+            glm::vec3(0.0f, 1.0f, 0.0f));
 
     auto vertex_callback = [&](const GLPlay::EventData &event_data) {
         const GLPlay::VertexEventData & vertex_event_data = static_cast<const GLPlay::VertexEventData&>(event_data);
@@ -100,6 +116,14 @@ int main(int argc, char ** argv) {
     };
 
     GLPlay::Renderable::event_source_.RegisterHandler(GLPlay::Renderable::VERTEX_EVENT, vertex_callback);
+
+    mesh_resource = new GLPlay::Resource<GLPlay::MeshResource>("meshes/cube");
+
+    info_text_avg_frame_time = ui_overlay->AddInfoText("Frame Avg: ");
+    info_text_min_frame_time = ui_overlay->AddInfoText("Frame Min: ");
+    info_text_max_frame_time = ui_overlay->AddInfoText("Frame Max: ");
+    info_text_tris = ui_overlay->AddInfoText("Triangles: ");
+
 
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(MainLoop, MAX_FPS, 1);

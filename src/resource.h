@@ -64,7 +64,7 @@ Resource<T>::Resource(std::string name) : name_(name) {
         T resource = T();
         auto manifest = json::parse(manifest_buffer);
         try {
-            manifest[resource_prefix].at(name);
+            manifest[resource_prefix].at(resource_name);
         } catch (std::out_of_range) {
             resource_name = "default";
         }
