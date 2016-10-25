@@ -38,7 +38,7 @@ void ShaderResource::SetData(std::vector<unsigned char> & data) {
     }
 }
 
-GLuint ShaderResource::GetShader(GLenum shader_type) {
+GLuint ShaderResource::GetShader(GLenum shader_type, std::string name) {
     std::string shader_string;
     if (shader_type == GL_VERTEX_SHADER) {
         shader_string = "vertex";
@@ -47,7 +47,7 @@ GLuint ShaderResource::GetShader(GLenum shader_type) {
         shader_string = "fragment";
     }
 
-    shader_string += ".gl3";
+    shader_string += fmt::format(".gl3.{}", name);
 
     try {
         return gl_shader_map_.at(shader_string);

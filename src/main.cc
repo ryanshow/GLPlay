@@ -52,7 +52,7 @@ void MainLoop() {
     glfwSetTime(0.0f);
 
     glClearColor(0.2, 0.2, 0.2, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     ui_overlay->Render();
 
@@ -106,7 +106,7 @@ int main(int argc, char ** argv) {
     ui_overlay = new GLPlay::UiOverlay(window);
 
     view_matrix *= glm::lookAt(
-            glm::vec3(0.0f, 0.0f, 5.0f),
+            glm::vec3(2.0f, 3.0f, 5.0f),
             glm::vec3(0.0f),
             glm::vec3(0.0f, 1.0f, 0.0f));
 

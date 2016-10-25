@@ -29,7 +29,7 @@ public:
 
 class Renderable {
 public:
-    Renderable();
+    Renderable(std::string frag_shader, std::string vert_shader);
     ~Renderable();
 
     void Bind();

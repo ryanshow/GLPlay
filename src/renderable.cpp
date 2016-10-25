@@ -8,12 +8,12 @@ namespace GLPlay {
 
 EventSource<Renderable::RenderableEvent> Renderable::event_source_;
 
-Renderable::Renderable() {
+Renderable::Renderable(std::string frag_shader, std::string vert_shader) {
     gl_texture_ = 0;
     glGenBuffers(3, gl_buffers_);
     glGenVertexArrays(1, gl_objects_);
 
-    shader_ = new Shader("default");
+    shader_ = new Shader(frag_shader, vert_shader);
 
     glBindBuffer(GL_UNIFORM_BUFFER, gl_buffers_[UNIFORM_BUFFER]);
     glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), nullptr, GL_STATIC_DRAW);
@@ -92,6 +92,8 @@ void Renderable::Render(glm::mat4 view_matrix, glm::mat4 proj_matrix) {
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(view_matrix));
     glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(proj_matrix));
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, gl_buffers_[UNIFORM_BUFFER]);
 
     glBindVertexArray(gl_objects_[ARRAY_OBJECT]); {
         glUseProgram((*shader_).gl_shader_);

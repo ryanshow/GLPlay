@@ -17,7 +17,7 @@ public:
     ShaderResource() {};
 
     void SetData(std::vector<unsigned char> & data);
-    GLuint GetShader(GLenum shader_type);
+    GLuint GetShader(GLenum shader_type, std::string name);
 
 //    template<typename T>
 //    void SetResource(std::string name, Resource<T> & resource);

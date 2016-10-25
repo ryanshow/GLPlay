@@ -58,6 +58,9 @@ Window::Window(int width, int height, const char * title) :
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+
     glEnable(GL_MULTISAMPLE);
 
     glfwSetWindowSizeCallback(glfw_window_, WindowResizeCallback);

@@ -45,10 +45,10 @@ void BitmapFont::GenerateTextMesh(std::string text, Renderable & renderable, flo
         stbtt_GetPackedQuad(char_data(), bitmap_width_, bitmap_height_, c-start_char_, &offset_x, &offset_y, &q, 1);
 
         std::vector<Vertex> verts = {
-            {{q.x1, -q.y0, 0.0f}, {}, {}, {q.s1, q.t0}, {}},
-            {{q.x1, -q.y1, 0.0f}, {}, {}, {q.s1, q.t1}, {}},
-            {{q.x0, -q.y1, 0.0f}, {}, {}, {q.s0, q.t1}, {}},
-            {{q.x0, -q.y0, 0.0f}, {}, {}, {q.s0, q.t0}, {}}
+            {{q.x1, -q.y0, 0.0f}, {}, {0.0f, 0.0f, 0.0f, 1.0f}, {q.s1, q.t0}, {}},
+            {{q.x1, -q.y1, 0.0f}, {}, {0.0f, 0.0f, 0.0f, 1.0f}, {q.s1, q.t1}, {}},
+            {{q.x0, -q.y1, 0.0f}, {}, {0.0f, 0.0f, 0.0f, 1.0f}, {q.s0, q.t1}, {}},
+            {{q.x0, -q.y0, 0.0f}, {}, {0.0f, 0.0f, 0.0f, 1.0f}, {q.s0, q.t0}, {}}
         };
 
         std::vector<GLuint> indices = {

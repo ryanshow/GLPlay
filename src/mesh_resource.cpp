@@ -8,7 +8,7 @@ using json = nlohmann::json;
 namespace GLPlay {
 
 MeshResource::MeshResource() {
-    renderable_ = new Renderable();
+    renderable_ = new Renderable("default", "default");
 }
 
 void MeshResource::SetData(std::vector<unsigned char> & data) {
@@ -26,6 +26,7 @@ void MeshResource::SetData(std::vector<unsigned char> & data) {
     auto parsed_data = json::parse(data_string);
 
     auto parsed_vertices = parsed_data["vertices"];
+    auto parsed_colors = parsed_data["colors"];
 
     std::vector<Vertex> vertices;
     std::vector<GLuint> indices;
@@ -46,13 +47,16 @@ void MeshResource::SetData(std::vector<unsigned char> & data) {
     for(int i=0; i<faces.size(); i++) {
         unsigned char face_type = faces[i];
         fmt::print("Face type: {}, {}\n", i, face_type);
-        int face_indices = face_type & QUAD ? 4 : 3;
+        int face_vertex_count = face_type & QUAD ? 4 : 3;
+
+        std::vector<int> face_indices;
 
         // Vertices
-        for (int j=i+1; j <= i+face_indices; ++j) {
-            indices.push_back(faces[j]);
+        for (int j=0; j < face_vertex_count; ++j) {
+            indices.push_back(faces[i+1+j]);
+            face_indices.push_back(faces[i+1+j]);
         }
-        i += face_indices;
+        i += face_vertex_count;
 
         // Material index
         if (face_type & FACE_MATERIAL) {
@@ -69,10 +73,10 @@ void MeshResource::SetData(std::vector<unsigned char> & data) {
 
         if (face_type & FACE_VERTEX_UV) {
             fmt::print("FACE_VERTEX_UV\n");
-            for (int j = i+1; j <= i+face_indices; ++j) {
+            for (int j = 0; j < face_vertex_count; ++j) {
                 // TODO: Implement FACE_VERTEX_UV import
             }
-            i+=face_indices;
+            i+=face_vertex_count;
         }
 
         if (face_type & FACE_NORMAL) {
@@ -83,10 +87,10 @@ void MeshResource::SetData(std::vector<unsigned char> & data) {
 
         if (face_type & FACE_VERTEX_NORMAL) {
             fmt::print("FACE_VERTEX_NORMAL\n");
-            for (int j = i+1; j <= i+face_indices; ++j) {
+            for (int j = 0; j < face_vertex_count; ++j) {
                 // TODO: Implement FACE_VERTEX_NORMAL import
             }
-            i+=face_indices;
+            i+=face_vertex_count;
             fmt::print("i is now..{}\n", i);
         }
 
@@ -98,10 +102,13 @@ void MeshResource::SetData(std::vector<unsigned char> & data) {
 
         if (face_type & FACE_VERTEX_COLOR) {
             fmt::print("FACE_VERTEX_COLOR\n");
-            for (int j = i+1; j <= i+face_indices; ++j) {
-                // TODO: Implement FACE_VERTEX_COLOR import
+            for (int j = 0; j < face_vertex_count; ++j) {
+                int color_index = faces[i+1+j];
+                uint32_t hex_color = parsed_colors[color_index];
+                glm::vec3 col((hex_color&0xFF0000) >> 16, (hex_color&0x00FF00) >> 8, (hex_color&0x0000FF));
+                vertices[face_indices[j]].col = glm::vec4(col/255.0f, 1.0f);
             }
-            i+=face_indices;
+            i+=face_vertex_count;
         }
     }
 

@@ -17,7 +17,7 @@ namespace GLPlay {
 
 class Shader {
 public:
-    Shader(std::string name);
+    Shader(std::string frag_shader, std::string vert_shader);
 
     GLuint gl_shader_;
 private:

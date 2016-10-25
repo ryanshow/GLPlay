@@ -70,7 +70,7 @@ int UiOverlay::AddInfoText(std::string text) {
 
     text_renderable_map_[handler].info_text_ = text;
     text_renderable_map_[handler].dirty_ = true;
-    text_renderable_map_[handler].renderable_ = new Renderable();
+    text_renderable_map_[handler].renderable_ = new Renderable("default", "r8alpha");
     text_renderable_map_[handler].renderable_->SetTextureFromBitmap(bitmap_font_->bitmap(), bitmap_font_->bitmap_width(), bitmap_font_->bitmap_height());
 
     return handler;
