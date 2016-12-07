@@ -12,9 +12,9 @@
     }
   },
   "meshes": {
-    "cube": {
+    "monkey": {
       "type": "file",
-      "location": "meshes/cube.json"
+      "location": "meshes/monkey.json"
     }
   }
 }

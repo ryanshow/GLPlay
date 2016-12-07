@@ -117,7 +117,7 @@ int main(int argc, char ** argv) {
 
     GLPlay::Renderable::event_source_.RegisterHandler(GLPlay::Renderable::VERTEX_EVENT, vertex_callback);
 
-    mesh_resource = new GLPlay::Resource<GLPlay::MeshResource>("meshes/cube");
+    mesh_resource = new GLPlay::Resource<GLPlay::MeshResource>("meshes/monkey");
 
     info_text_avg_frame_time = ui_overlay->AddInfoText("Frame Avg: ");
     info_text_min_frame_time = ui_overlay->AddInfoText("Frame Min: ");

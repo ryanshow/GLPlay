@@ -28,7 +28,13 @@ set(SOURCE_FILES
     src/shader.h
     src/resource.h
     src/shader.cpp
-        src/raw_resource.h src/raw_resource.cpp src/shader_resource.h src/shader_resource.cpp src/mesh_resource.h src/mesh_resource.cpp)
+    src/raw_resource.h
+    src/raw_resource.cpp
+    src/shader_resource.h
+    src/shader_resource.cpp
+    src/mesh_resource.h
+    src/mesh_resource.cpp
+)
 
 add_executable(GLPlay ${SOURCE_FILES})
 

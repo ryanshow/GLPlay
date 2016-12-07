@@ -12,7 +12,7 @@ UiOverlay::UiOverlay(Window *window) {
 
     viewport_ = new OrthoViewport(window->width(), window->height());
 
-    bitmap_font_ = new BitmapFont("default", 24.0f);
+    bitmap_font_ = new BitmapFont("default", 15.0f);
 
     int info_text_win_size = AddInfoText("Hello");
 
